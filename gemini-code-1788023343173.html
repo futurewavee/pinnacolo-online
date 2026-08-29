@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#030d06" />
+  <title>Pinnacolo.io - Deluxe Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&family=Tenor+Sans&display=swap" rel="stylesheet">
+  
+  <!-- Supabase SDK per Multiplayer Realtime -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- CrazyGames SDK v3 Ufficiale per Monetizzazione -->
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+
+  <style>
+    :root {
+      --felt-radial: #14532d;
+      --felt-main: #0a2916;
+      --felt-dark: #020b05;
+      --gold-light: #fef08a;
+      --gold-primary: #d4af37;
+      --gold-dark: #8c7121;
+      --card-bg: #ffffff;
+      --card-border: #cfc7b8;
+      
+      --card-w: clamp(42px, 8.5vh, 64px);
+      --card-h: clamp(62px, 13vh, 96px);
+      --mini-w: clamp(32px, 6.5vh, 46px);
+      --mini-h: clamp(48px, 9.5vh, 68px);
+
+      --apple-glass: rgba(18, 38, 26, 0.75);
+      --apple-glass-border: rgba(255, 255, 255, 0.16);
+      --apple-blur: blur(24px);
+      --apple-radius-lg: 18px;
+      --apple-radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Outfit', sans-serif;
+      background: radial-gradient(ellipse at 50% 35%, var(--felt-radial) 0%, var(--felt-main) 55%, var(--felt-dark) 100%);
+      color: #fff;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #landscape-prompt {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 10, 5, 0.96);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      backdrop-filter: blur(15px);
+    }
+    .rotate-icon {
+      font-size: 3.5rem;
+      animation: rotatePhone 2s infinite ease-in-out;
+      margin-bottom: 16px;
+    }
+    @keyframes rotatePhone {
+      0%, 20% { transform: rotate(0deg); }
+      50%, 70% { transform: rotate(-90deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @media (orientation: portrait) and (max-width: 900px) {
+      #landscape-prompt { display: flex; }
+    }
+
+    #table-edge {
+      position: absolute;
+      inset: 2px;
+      border: clamp(3px, 0.8vw, 6px) solid #1e0d04;
+      border-radius: clamp(10px, 1.8vw, 20px);
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.9), 0 0 15px rgba(0,0,0,0.95);
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      padding: 10px 16px;
+    }
+    .screen.active { display: flex; }
+
+    #screen-menu {
+      overflow-y: auto;
+      justify-content: flex-start;
+      padding: clamp(16px, 3vh, 32px) 16px;
+    }
+
+    .apple-menu-wrapper {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeIn 0.4s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-title {
+      font-family: 'Tenor Sans', sans-serif;
+      font-size: clamp(1.8rem, 5.5vh, 3rem);
+      color: #fefce8;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 35px rgba(212,175,55,0.4);
+      letter-spacing: clamp(4px, 1.5vw, 8px);
+      line-height: 1;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .hero-sub {
+      font-family: 'Space Grotesk', sans-serif;
+      color: #86efac;
+      font-size: clamp(0.7rem, 1.8vh, 0.85rem);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    .apple-profile-card {
+      background: var(--apple-glass);
+      border: 1px solid var(--apple-glass-border);
+      border-radius: var(--apple-radius-md);
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: var(--apple-blur);
+    }
+    .profile-left { display: flex; align-items: center; gap: 10px; }
+    .profile-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .profile-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+
+    .apple-sub-card {
+      background: var(--apple-glass);
+      border: 1px solid var(--apple-glass-border);
+      border-radius: var(--apple-radius-md);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      backdrop-filter: var(--apple-blur);
+    }
+
+    .tray-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .apple-cta-play {
+      background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #9a781b 100%);
+      color: #0c1a0e;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--apple-radius-md);
+      padding: 14px 18px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      transition: all 0.2s ease;
+    }
+    .apple-cta-play:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #e2e8f0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      border-radius: var(--apple-radius-md);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+
+    /* Matchmaking Screen */
+    #screen-matchmaking {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 10, 5, 0.94);
+      backdrop-filter: blur(16px);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+    }
+    .radar-spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(56, 189, 248, 0.2);
+      border-top: 3px solid #38bdf8;
+      border-radius: 50%;
+      animation: spinRadar 1s linear infinite;
+    }
+    @keyframes spinRadar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Layout Tavolo */
+    #game-layout {
+      position: absolute;
+      inset: 6px;
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+      gap: 4px;
+      z-index: 10;
+      padding: 2px 4px;
+      height: calc(100% - 12px);
+    }
+
+    .hud-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      background: rgba(3, 16, 9, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 3px 8px;
+      backdrop-filter: blur(12px);
+      gap: 6px;
+    }
+
+    .pill { display: flex; align-items: center; gap: 6px; }
+    .pill-player { justify-content: flex-end; }
+
+    .bot-status-pill {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .turn-badge {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      text-align: center;
+    }
+    .turn-badge.must-draw {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(185, 28, 28, 0.45) 100%);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+    }
+    .turn-badge.player-turn-active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3) 0%, rgba(2, 132, 199, 0.45) 100%);
+      border: 1px solid #38bdf8;
+      color: #bae6fd;
+    }
+    .turn-badge.bot-turn { background: rgba(0, 0, 0, 0.5); border-color: rgba(255, 255, 255, 0.1); color: #cbd5e1; }
+
+    .btn-exit {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #cbd5e1;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .table-melds-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(2, 14, 7, 0.55);
+      border-radius: 10px;
+      border: 1.5px dashed rgba(212,175,55,0.3);
+      padding: 4px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .melds-lane {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .melds-lane::-webkit-scrollbar { width: 3px; }
+    .melds-lane::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+    .lane-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(212,175,55,0.25);
+      padding-bottom: 2px;
+      position: sticky;
+      top: 0;
+      background: rgba(3, 16, 8, 0.95);
+      z-index: 5;
+    }
+
+    .meld-row {
+      background: rgba(0,0,0,0.55);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex-wrap: wrap;
+      cursor: pointer;
+    }
+    .meld-row.drag-over-target {
+      border-color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.2) !important;
+      transform: scale(1.01);
+    }
+    .meld-pts-tag {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      background: rgba(0,0,0,0.8);
+      padding: 1px 3px;
+      border-radius: 3px;
+    }
+
+    .center-action-dock {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(3, 16, 9, 0.7);
+      border-radius: 10px;
+      padding: 3px 6px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .draw-deck-target {
+      width: clamp(44px, 8vh, 60px);
+      height: clamp(40px, 7.5vh, 54px);
+      background: repeating-linear-gradient(45deg, #1e3a8a, #1e3a8a 4px, #172554 4px, #172554 8px);
+      border: 1.5px solid #fff;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .draw-deck-target.animated-draw-prompt {
+      border-color: #fde047;
+      box-shadow: 0 0 12px rgba(253, 224, 71, 0.9);
+      animation: pulseDeck 1s infinite alternate;
+    }
+    @keyframes pulseDeck { 0% { transform: scale(1); } 100% { transform: scale(1.04); } }
+    .draw-deck-target span { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.65rem; }
+    .deck-count-num { position: absolute; bottom: 1px; font-family: 'Space Grotesk', sans-serif; font-size: 0.58rem; color: var(--gold-light); font-weight: 700; }
+
+    .discard-scroll-ribbon { flex: 1; display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+    .discard-title-row { font-family: 'Space Grotesk', sans-serif; font-size: 0.6rem; font-weight: 700; color: #bfdbfe; display: flex; justify-content: space-between; }
+    .discard-scroll-row { display: flex; align-items: center; gap: 2px; overflow-x: auto; padding: 1px; }
+    .discard-scroll-row::-webkit-scrollbar { height: 3px; }
+    .discard-scroll-row::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+    .player-dock {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      background: rgba(3, 16, 9, 0.94);
+      border-radius: 10px;
+      padding: 4px 6px;
+      border: 1px solid rgba(212,175,55,0.4);
+      width: 100%;
+    }
+
+    .action-button-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+      width: 100%;
+      gap: 4px;
+    }
+
+    .btn-game-action {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: clamp(0.62rem, 1.4vh, 0.78rem);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 6px;
+      padding: 6px 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .btn-game-action:active { transform: scale(0.96); }
+    .btn-game-tool { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.22); color: #f8fafc; }
+    .btn-game-meld { background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); color: #fff; }
+    .btn-game-discard { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #fff; }
+    .btn-lock { opacity: 0.3 !important; pointer-events: none !important; filter: grayscale(1) !important; }
+
+    .hand-cards-rack { display: flex; flex-direction: column; gap: 2px; width: 100%; overflow: hidden; }
+    .hand-scroll-lane {
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+      overflow-x: auto;
+      padding: 4px 2px 2px 2px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+    }
+    .hand-scroll-lane::-webkit-scrollbar { height: 4px; }
+    .hand-scroll-lane::-webkit-scrollbar-thumb { background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary)); border-radius: 2px; }
+
+    /* Card Component */
+    .card-unit {
+      flex: 0 0 auto;
+      width: var(--card-w);
+      height: var(--card-h);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+      color: #111;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2px 3px;
+      position: relative;
+      cursor: grab;
+      transition: transform 0.12s ease;
+    }
+    .card-unit.is-picked {
+      transform: translateY(-8px) !important;
+      outline: 2.5px solid var(--gold-primary);
+      box-shadow: 0 6px 14px rgba(212,175,55,0.85);
+      z-index: 10;
+    }
+    .card-unit.red { color: #dc2626; }
+    .card-unit.black { color: #090d16; }
+    .card-unit.is-joker { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #f59e0b; }
+    .card-unit.is-mattino { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #16a34a; }
+
+    .card-unit.mini { width: var(--mini-w); height: var(--mini-h); border-radius: 4px; padding: 1px 2px; cursor: default; }
+    .card-unit.discard-item { transform: scale(0.85); margin-right: -6px; }
+
+    .c-top { display: flex; flex-direction: column; line-height: 1; }
+    .c-val { font-family: 'Space Grotesk', sans-serif; font-size: clamp(0.75rem, 1.8vh, 0.95rem); font-weight: 800; }
+    .mini .c-val { font-size: 0.62rem; }
+    .c-suit-s { font-size: clamp(0.6rem, 1.4vh, 0.75rem); }
+    .mini .c-suit-s { font-size: 0.5rem; }
+    .c-center { align-self: center; font-size: clamp(0.85rem, 2vh, 1.15rem); line-height: 1; opacity: 0.9; }
+    .mini .c-center { font-size: 0.65rem; }
+    .c-bottom { display: flex; justify-content: space-between; align-items: center; font-family: 'Space Grotesk', sans-serif; font-size: clamp(0.48rem, 1.1vh, 0.6rem); font-weight: 800; color: #64748b; line-height: 1; }
+    .mini .c-bottom { font-size: 0.4rem; }
+
+    .tag-spec { font-size: 0.45rem; padding: 0 2px; border-radius: 2px; color: #fff; font-weight: 800; text-transform: uppercase; }
+    .tag-joker { background: #d97706; }
+    .tag-mattino { background: #15803d; }
+
+    /* Modals */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      padding: 12px;
+      backdrop-filter: blur(8px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #081e12;
+      border: 1.5px solid var(--gold-primary);
+      border-radius: 14px;
+      max-width: 440px;
+      width: 100%;
+      padding: 14px;
+      color: #e2e8f0;
+      text-align: center;
+    }
+    .score-grid { width: 100%; margin: 8px 0; border-collapse: collapse; font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; }
+    .score-grid th, .score-grid td { padding: 4px 6px; border-bottom: 1px solid rgba(212,175,55,0.25); }
+  </style>
+</head>
+<body>
+
+  <!-- Avviso Rotazione Mobile -->
+  <div id="landscape-prompt">
+    <div class="rotate-icon">📱 ➡️ 🔄</div>
+    <h2 style="font-family:'Space Grotesk', sans-serif; color:var(--gold-light); font-size:1.3rem;">Ruota lo Schermo</h2>
+    <p style="color:#94a3b8; font-size:0.85rem; margin-top:6px;">Mantieni il telefono in orizzontale per giocare!</p>
+  </div>
+
+  <div id="table-edge"></div>
+
+  <!-- MENU INIZIALE .IO -->
+  <div id="screen-menu" class="screen active">
+    <div class="apple-menu-wrapper">
+      
+      <div>
+        <h1 class="hero-title">Pinnacolo.io</h1>
+        <p class="hero-sub">Multiplayer Online</p>
+      </div>
+
+      <!-- Profilo e Opzioni -->
+      <div class="apple-profile-card">
+        <div class="profile-left">
+          <div class="profile-avatar">👤</div>
+          <input type="text" id="player-nickname" value="Giocatore" maxlength="14"
+                 style="background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color:#fff; font-family:'Space Grotesk'; font-weight:800; font-size:1rem; outline:none;">
+        </div>
+        <button class="btn-exit" onclick="App.toggleFullscreen()">⛶ Schermo Intero</button>
+      </div>
+
+      <!-- Azioni Rapide .IO -->
+      <button class="apple-cta-play" onclick="App.startAutoMatchmaking()">⚡ GIOCA SUBITO (1v1 RAPIDO)</button>
+
+      <div class="apple-sub-card">
+        <span class="tray-label">Invita un Amico</span>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="custom-room-code" placeholder="Codice Stanza (es. PINNA77)" maxlength="10"
+                 style="flex:1; padding: 8px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.4); background: rgba(0,0,0,0.6); color: #fff; text-align: center; font-family: 'Space Grotesk', sans-serif; font-weight: 800; text-transform: uppercase;">
+          <button class="btn-secondary" onclick="App.joinSpecificRoom()">Entra</button>
+          <button class="btn-secondary" onclick="App.createAndCopyInviteLink()">🔗 Link</button>
+        </div>
+      </div>
+
+      <button class="btn-secondary" onclick="App.startBotGame()">🤖 Allenamento Offline con IA</button>
+    </div>
+  </div>
+
+  <!-- MATCHMAKING SCREEN -->
+  <div id="screen-matchmaking">
+    <div class="radar-spinner"></div>
+    <h2 style="font-family:'Space Grotesk',sans-serif; color:var(--gold-light); font-size:1.2rem;" id="mm-title">Ricerca Avversario...</h2>
+    <p style="font-size:0.8rem; color:#93c5fd; text-align:center;" id="mm-status-text">Connessione ai server .io in corso...</p>
+    <button class="btn-exit" style="padding:6px 14px; margin-top:8px;" onclick="App.cancelMatchmaking()">Annulla</button>
+  </div>
+
+  <!-- TAVOLO DI GIOCO -->
+  <div id="screen-game" class="screen">
+    <div id="game-layout">
+
+      <div class="hud-header">
+        <div class="pill">
+          <div class="bot-status-pill">
+            <span id="bot-icon-state">👤</span>
+            <span id="opp-display-name">Avversario</span>
+            <strong id="bot-card-count-hud">19</strong>
+          </div>
+          <span class="pill-sub" id="hud-bot-score-text" style="font-size:0.75rem; color:#6ee7b7;">0 pt</span>
+        </div>
+
+        <div class="turn-badge must-draw" id="hud-turn-badge">👉 Pesca una carta</div>
+
+        <div class="pill pill-player">
+          <div style="display:flex; flex-direction:column; align-items:flex-end;">
+            <span class="pill-title" id="hud-player-name-top" style="font-size:0.8rem;">Tu</span>
+            <span class="pill-sub" id="hud-player-details" style="font-size:0.75rem; color:#6ee7b7;">0 pt</span>
+          </div>
+          <button class="btn-exit" onclick="App.quitToMenu()">Esci</button>
+        </div>
+      </div>
+
+      <!-- Area Calate Tavolo -->
+      <div class="table-melds-container">
+        <div class="melds-lane">
+          <div class="lane-title">
+            <span id="label-melds-opp">Calate Avversario</span>
+            <span id="bot-melds-count">0</span>
+          </div>
+          <div id="bot-melds-rack" style="display:flex; flex-direction:column; gap:3px;"></div>
+        </div>
+
+        <div class="melds-lane">
+          <div class="lane-title">
+            <span>Le Tue Calate (Trascina per attaccare)</span>
+            <span id="player-melds-count">0</span>
+          </div>
+          <div id="player-melds-rack" style="display:flex; flex-direction:column; gap:3px;"></div>
+        </div>
+      </div>
+
+      <!-- Mazzo e Scarti -->
+      <div class="center-action-dock">
+        <div class="draw-deck-target animated-draw-prompt" id="deck-draw-btn" onclick="App.drawFromDeck()">
+          <span>PESCA</span>
+          <div class="deck-count-num" id="deck-left-count">108</div>
+        </div>
+
+        <div class="discard-scroll-ribbon">
+          <div class="discard-title-row">
+            <span>Fila Scarti (Tocca per raccogliere)</span>
+            <span id="discard-count-label">0</span>
+          </div>
+          <div class="discard-scroll-row" id="discard-stream-rack"></div>
+        </div>
+      </div>
+
+      <!-- Dock Giocatore -->
+      <div class="player-dock">
+        <div class="action-button-row">
+          <button class="btn-game-action btn-game-tool" onclick="App.sortHandByValue()">🔢 VALORE</button>
+          <button class="btn-game-action btn-game-tool" onclick="App.sortHandBySuit()">🎨 SEME</button>
+          <button class="btn-game-action btn-game-tool" onclick="App.clearSelection()">DESELEZIONA</button>
+          <button id="btn-action-meld" class="btn-game-action btn-game-meld btn-lock" onclick="App.playCombination()">✨ CALA</button>
+          <button id="btn-action-discard" class="btn-game-action btn-game-discard btn-lock" onclick="App.discardCard()">SCARTA</button>
+        </div>
+
+        <div class="hand-cards-rack" id="player-cards-rack"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL FINE MANO / ADS CRAZYGAMES -->
+  <div id="modal-round-end" class="modal-overlay">
+    <div class="modal-box">
+      <h2 id="round-title" style="color:var(--gold-light); font-size:1.3rem; font-family:'Tenor Sans', sans-serif;">MANO CONCLUSA!</h2>
+      <table class="score-grid">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Dettaglio</th>
+            <th style="text-align:right;">Tu</th>
+            <th style="text-align:right;" id="lbl-round-opp-name">Avversario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align:left;">Punti Calati</td>
+            <td id="rnd-p-melds" style="text-align:right;">0</td>
+            <td id="rnd-b-melds" style="text-align:right;">0</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;">Bonus Chiusura</td>
+            <td id="rnd-p-bonus" style="text-align:right; color:#4ade80;">0</td>
+            <td id="rnd-b-bonus" style="text-align:right; color:#4ade80;">0</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;">Penalità Carte</td>
+            <td id="rnd-p-hand-pen" style="text-align:right; color:#f87171;">0</td>
+            <td id="rnd-b-hand-pen" style="text-align:right; color:#f87171;">0</td>
+          </tr>
+          <tr style="border-top:1.5px solid rgba(212,175,55,0.4); font-weight:800;">
+            <td style="text-align:left; color:#fbbf24;">Totale Match</td>
+            <td id="rnd-p-total-match" style="text-align:right; color:var(--gold-light);">0</td>
+            <td id="rnd-b-total-match" style="text-align:right; color:var(--gold-light);">0</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button class="apple-cta-play" style="width:100%; margin-top:8px;" onclick="App.handleNextRoundOrEnd()">Prossima Partita ➡️</button>
+    </div>
+  </div>
+
+  <script>
+    // Configurazione Supabase Realtime
+    const SUPABASE_URL = "https://uykyinbavorfpvclwpcg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5a3lpbmJhdm9yZnB2Y2x3cGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMTYwMjcsImV4cCI6MjEwMzU5MjAyN30._Z5CMRdn0nARIgNJdkZxkdh2TC_by2JVVXOOLyHyjIE";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const SoundEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      },
+      playSlide() {
+        if (!this.ctx) return;
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(420, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.08);
+        g.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        o.connect(g); g.connect(this.ctx.destination);
+        o.start(); o.stop(this.ctx.currentTime + 0.08);
+      },
+      playMeld() {
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99].forEach((f, i) => {
+          const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.05);
+          g.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.05);
+          g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.05 + 0.18);
+          o.connect(g); g.connect(this.ctx.destination);
+          o.start(this.ctx.currentTime + i * 0.05);
+          o.stop(this.ctx.currentTime + i * 0.05 + 0.18);
+        });
+      },
+      playEnd() {
+        if (!this.ctx) return;
+        [440, 554.37, 659.25].forEach((f, i) => {
+          const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.06);
+          g.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.06);
+          g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.06 + 0.25);
+          o.connect(g); g.connect(this.ctx.destination);
+          o.start(this.ctx.currentTime + i * 0.06);
+          o.stop(this.ctx.currentTime + i * 0.06 + 0.25);
+        });
+      }
+    };
+
+    const SUITS = {
+      HEARTS: { symbol: '♥', isRed: true, order: 1 },
+      DIAMONDS: { symbol: '♦', isRed: true, order: 2 },
+      CLUBS: { symbol: '♣', isRed: false, order: 3 },
+      SPADES: { symbol: '♠', isRed: false, order: 4 }
+    };
+
+    class Card {
+      constructor(id, val, suitKey, isJoker = false) {
+        this.id = id;
+        this.val = val;
+        this.suitKey = suitKey;
+        this.suit = suitKey ? SUITS[suitKey] : { symbol: '★', isRed: true, order: 0 };
+        this.isJoker = isJoker;
+        this.isMattino = (val === 2 && (suitKey === 'SPADES' || suitKey === 'CLUBS'));
+        this.points = this.calcPts();
+      }
+      calcPts() {
+        if (this.isJoker) return 30;
+        if (this.isMattino) return 20;
+        if (this.val === 1) return 15;
+        if (this.val >= 7 && this.val <= 13) return 10;
+        return 5;
+      }
+      getLabel() {
+        if (this.isJoker) return 'JK';
+        if (this.val === 1) return 'A';
+        if (this.val === 11) return 'J';
+        if (this.val === 12) return 'Q';
+        if (this.val === 13) return 'K';
+        return this.val.toString();
+      }
+    }
+
+    const App = {
+      deck: [],
+      discardPile: [],
+      playerHand: [],
+      botHand: [],
+      playerMelds: [],
+      botMelds: [],
+      selectedIdsOrdered: [],
+      currentTurn: 'player',
+      hasDrawn: false,
+      obligatedId: null,
+
+      playerMatchScore: 0,
+      botMatchScore: 0,
+
+      draggedCardId: null,
+      supabaseChannel: null,
+      isOnlineGame: false,
+      isHost: false,
+      roomCode: '',
+      myClientId: 'p_' + Math.random().toString(36).substring(2, 9),
+      matchmakingFallbackTimer: null,
+
+      async init() {
+        window.addEventListener('click', () => SoundEngine.init(), { once: true });
+        window.addEventListener('touchstart', () => SoundEngine.init(), { once: true });
+
+        // Inizializzazione SDK CrazyGames
+        if (window.CrazyGames && window.CrazyGames.SDK) {
+          try {
+            await window.CrazyGames.SDK.init();
+          } catch (e) {
+            console.log("CrazyGames SDK in esecuzione locale.");
+          }
+        }
+
+        // Controllo Link d'Invito Diretto da URL (?room=XXXX)
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteRoom = urlParams.get('room');
+        if (inviteRoom) {
+          document.getElementById('custom-room-code').value = inviteRoom.toUpperCase();
+          this.joinSpecificRoom();
+        }
+      },
+
+      toggleFullscreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+        else document.exitFullscreen().catch(() => {});
+      },
+
+      createAndCopyInviteLink() {
+        let code = document.getElementById('custom-room-code').value.trim().toUpperCase();
+        if (!code) {
+          code = 'PINNA' + Math.floor(1000 + Math.random() * 9000);
+          document.getElementById('custom-room-code').value = code;
+        }
+        const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${code}`;
+        navigator.clipboard.writeText(inviteUrl).then(() => {
+          alert(`Link d'invito copiato negli appunti!\n\n${inviteUrl}\n\nInvialo al tuo amico per giocare insieme!`);
+        });
+      },
+
+      // MATCHMAKING AUTOMATICO .IO
+      startAutoMatchmaking() {
+        // Assegna una stanza pubblica casuale a rotazione
+        const randomPublicRoom = 'LOBBY_PUBBLICA_' + (Math.floor(Date.now() / 15000) % 5);
+        this.roomCode = randomPublicRoom;
+        this.joinRoomWithFallback(true);
+      },
+
+      joinSpecificRoom() {
+        const code = document.getElementById('custom-room-code').value.trim().toUpperCase();
+        if (!code) return alert("Inserisci un codice stanza valido!");
+        this.roomCode = code;
+        this.joinRoomWithFallback(false);
+      },
+
+      joinRoomWithFallback(isAutoMatch) {
+        SoundEngine.init();
+        this.isOnlineGame = true;
+        const mmScreen = document.getElementById('screen-matchmaking');
+        mmScreen.style.display = 'flex';
+        document.getElementById('mm-status-text').innerText = "Ricerca avversario in corso...";
+
+        if (this.supabaseChannel) supabaseClient.removeChannel(this.supabaseChannel);
+
+        this.supabaseChannel = supabaseClient.channel(`room_${this.roomCode}`, {
+          config: { presence: { key: this.myClientId }, broadcast: { self: false } }
+        });
+
+        // Fallback: Se in 4 secondi non entra nessuno, avvia con un Bot simulato
+        if (isAutoMatch) {
+          this.matchmakingFallbackTimer = setTimeout(() => {
+            if (this.supabaseChannel) supabaseClient.removeChannel(this.supabaseChannel);
+            mmScreen.style.display = 'none';
+            this.startBotGame("Marco_Modena");
+          }, 4000);
+        }
+
+        this.supabaseChannel
+          .on('presence', { event: 'sync' }, () => {
+            const state = this.supabaseChannel.presenceState();
+            const users = Object.keys(state);
+
+            if (users.length === 2) {
+              if (this.matchmakingFallbackTimer) clearTimeout(this.matchmakingFallbackTimer);
+              users.sort();
+              this.isHost = (users[0] === this.myClientId);
+
+              if (this.isHost) {
+                const fullDeck = this.buildDeck();
+                const hostHand = fullDeck.splice(0, 19);
+                const guestHand = fullDeck.splice(0, 19);
+                const initialDiscard = [fullDeck.pop()];
+                const starter = Math.random() < 0.5 ? 'host' : 'guest';
+
+                this.broadcastMove('game_start', {
+                  deck: fullDeck,
+                  discard: initialDiscard,
+                  hostHand,
+                  guestHand,
+                  starter,
+                  oppName: document.getElementById('player-nickname').value || 'Avversario'
+                });
+
+                this.setupOnlineGame({
+                  myHand: hostHand,
+                  oppHandCount: guestHand.length,
+                  deck: fullDeck,
+                  discard: initialDiscard,
+                  turn: (starter === 'host') ? 'player' : 'bot',
+                  oppName: "Giocatore .io"
+                });
+              }
+            }
+          })
+          .on('broadcast', { event: 'game_move' }, ({ payload }) => {
+            this.handleRemoteMove(payload);
+          })
+          .subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await this.supabaseChannel.track({ name: document.getElementById('player-nickname').value });
+            }
+          });
+      },
+
+      cancelMatchmaking() {
+        if (this.matchmakingFallbackTimer) clearTimeout(this.matchmakingFallbackTimer);
+        if (this.supabaseChannel) supabaseClient.removeChannel(this.supabaseChannel);
+        document.getElementById('screen-matchmaking').style.display = 'none';
+      },
+
+      broadcastMove(actionType, data) {
+        if (!this.supabaseChannel || !this.isOnlineGame) return;
+        this.supabaseChannel.send({
+          type: 'broadcast',
+          event: 'game_move',
+          payload: { actionType, data }
+        });
+      },
+
+      handleRemoteMove({ actionType, data }) {
+        if (actionType === 'game_start') {
+          this.setupOnlineGame({
+            myHand: data.guestHand,
+            oppHandCount: data.hostHand.length,
+            deck: data.deck,
+            discard: data.discard,
+            turn: (data.starter === 'guest') ? 'player' : 'bot',
+            oppName: data.oppName || "Giocatore .io"
+          });
+        }
+        else if (actionType === 'draw_deck') {
+          SoundEngine.playSlide();
+          this.deck.pop();
+          this.botHand.push(null);
+          this.render();
+        }
+        else if (actionType === 'draw_discard') {
+          SoundEngine.playSlide();
+          const picked = this.discardPile.splice(data.idx);
+          this.botHand.push(...picked);
+          this.render();
+        }
+        else if (actionType === 'meld') {
+          SoundEngine.playMeld();
+          this.botMelds.push(data.meld);
+          this.botHand.splice(0, data.meld.cards.length);
+          this.render();
+        }
+        else if (actionType === 'attach_meld') {
+          SoundEngine.playMeld();
+          const target = data.isPlayerTarget ? this.botMelds : this.playerMelds;
+          if (target[data.meldIndex]) {
+            target[data.meldIndex].cards = data.cards;
+            target[data.meldIndex].score = data.score;
+            target[data.meldIndex].isDouble = data.isDouble;
+          }
+          this.botHand.pop();
+          this.render();
+        }
+        else if (actionType === 'discard') {
+          SoundEngine.playSlide();
+          this.discardPile.push(data.card);
+          this.botHand.pop();
+          this.currentTurn = 'player';
+          this.hasDrawn = false;
+          this.playerMelds.forEach(m => m.createdThisTurn = false);
+          this.render();
+        }
+        else if (actionType === 'round_end') {
+          this.botHand = data.botRemainingHand || [];
+          this.endRound('bot');
+        }
+      },
+
+      setupOnlineGame({ myHand, oppHandCount, deck, discard, turn, oppName }) {
+        document.getElementById('screen-matchmaking').style.display = 'none';
+        document.getElementById('screen-menu').classList.remove('active');
+        document.getElementById('screen-game').classList.add('active');
+
+        document.getElementById('opp-display-name').innerText = oppName;
+        document.getElementById('hud-player-name-top').innerText = document.getElementById('player-nickname').value || 'Tu';
+
+        this.playerHand = myHand.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+        this.botHand = new Array(oppHandCount).fill(null);
+        this.deck = deck.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+        this.discardPile = discard.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+
+        this.playerMelds = [];
+        this.botMelds = [];
+        this.selectedIdsOrdered = [];
+        this.currentTurn = turn;
+        this.hasDrawn = false;
+        this.obligatedId = null;
+
+        // Segnala inizio gameplay a CrazyGames
+        if (window.CrazyGames && window.CrazyGames.SDK.game) {
+          window.CrazyGames.SDK.game.gameplayStart();
+        }
+
+        this.render();
+      },
+
+      startBotGame(botName = "Bot Intelligente") {
+        SoundEngine.init();
+        this.isOnlineGame = false;
+        this.deck = this.buildDeck();
+        this.playerHand = this.deck.splice(0, 19);
+        this.botHand = this.deck.splice(0, 19);
+        this.discardPile = [this.deck.pop()];
+
+        this.playerMelds = [];
+        this.botMelds = [];
+        this.selectedIdsOrdered = [];
+        this.hasDrawn = false;
+        this.obligatedId = null;
+
+        document.getElementById('opp-display-name').innerText = botName;
+        document.getElementById('hud-player-name-top').innerText = document.getElementById('player-nickname').value || 'Tu';
+
+        document.getElementById('screen-menu').classList.remove('active');
+        document.getElementById('screen-game').classList.add('active');
+        this.currentTurn = 'player';
+
+        if (window.CrazyGames && window.CrazyGames.SDK.game) {
+          window.CrazyGames.SDK.game.gameplayStart();
+        }
+
+        this.render();
+      },
+
+      buildDeck() {
+        const d = [];
+        let idCount = 1;
+        for (let p = 1; p <= 2; p++) {
+          for (const sKey of ['HEARTS', 'DIAMONDS', 'CLUBS', 'SPADES']) {
+            for (let v = 1; v <= 13; v++) {
+              d.push(new Card(`c-${idCount++}`, v, sKey, false));
+            }
+          }
+          d.push(new Card(`j-${idCount++}`, 0, null, true));
+          d.push(new Card(`j-${idCount++}`, 0, null, true));
+        }
+        for (let i = d.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [d[i], d[j]] = [d[j], d[i]];
+        }
+        return d;
+      },
+
+      quitToMenu() {
+        if (this.supabaseChannel) supabaseClient.removeChannel(this.supabaseChannel);
+        document.getElementById('screen-game').classList.remove('active');
+        document.getElementById('modal-round-end').classList.remove('open');
+        document.getElementById('screen-menu').classList.add('active');
+
+        if (window.CrazyGames && window.CrazyGames.SDK.game) {
+          window.CrazyGames.SDK.game.gameplayStop();
+        }
+      },
+
+      drawFromDeck() {
+        if (this.currentTurn !== 'player' || this.hasDrawn) return;
+        if (this.deck.length === 0) {
+          this.endRound('deck_empty');
+          return;
+        }
+
+        SoundEngine.playSlide();
+        this.playerHand.push(this.deck.pop());
+        this.hasDrawn = true;
+
+        if (this.isOnlineGame) this.broadcastMove('draw_deck', {});
+        this.render();
+      },
+
+      drawFromDiscard(idx) {
+        if (this.currentTurn !== 'player' || this.hasDrawn) return;
+
+        SoundEngine.playSlide();
+        const picked = this.discardPile.splice(idx);
+        this.playerHand.push(...picked);
+        this.hasDrawn = true;
+        this.obligatedId = picked[0].id;
+
+        if (this.isOnlineGame) this.broadcastMove('draw_discard', { idx });
+        this.render();
+      },
+
+      getSuitTrack(suitKey) {
+        if (suitKey === 'SPADES' || suitKey === 'CLUBS') return [3, 1, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4];
+        return [3, 2, 1, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4];
+      },
+
+      validateUserMeld(cards) {
+        if (cards.length < 3) return { valid: false, msg: "Servono almeno 3 carte." };
+        const wilds = cards.filter(c => c.isJoker || c.isMattino);
+        const nats = cards.filter(c => !c.isJoker && !c.isMattino);
+
+        let isRankGroup = false;
+        if (nats.length > 0) {
+          const targetVal = nats[0].val;
+          const sameRank = nats.every(c => c.val === targetVal);
+          const suits = new Set(nats.map(c => c.suitKey));
+          if (sameRank && suits.size === nats.length && nats.length <= 4) isRankGroup = true;
+        } else {
+          isRankGroup = true;
+        }
+
+        let isSequence = false;
+        if (!isRankGroup && nats.length > 0) {
+          const targetSuit = nats[0].suitKey;
+          if (nats.every(c => c.suitKey === targetSuit)) {
+            const track = this.getSuitTrack(targetSuit);
+            const doubledTrack = [...track, ...track, ...track];
+
+            const checkContiguity = (direction = 1) => {
+              const firstNatIdx = cards.findIndex(c => !c.isJoker && !c.isMattino);
+              const startTrackIndex = track.indexOf(cards[firstNatIdx].val) + track.length;
+              for (let i = 0; i < cards.length; i++) {
+                if (!cards[i].isJoker && !cards[i].isMattino) {
+                  if (cards[i].val !== doubledTrack[startTrackIndex + (i - firstNatIdx) * direction]) return false;
+                }
+              }
+              return true;
+            };
+            if (checkContiguity(1) || checkContiguity(-1)) isSequence = true;
+          }
+        }
+
+        if (!isRankGroup && !isSequence) return { valid: false, msg: "Combinazione non valida!" };
+
+        let basePts = cards.reduce((s, c) => s + c.points, 0);
+        let isDouble = (cards.length === 4 && wilds.length === 0 && isRankGroup) || (isSequence && cards.length >= 6 && wilds.length === 0);
+
+        return { valid: true, score: isDouble ? basePts * 2 : basePts, isDouble, orderedCards: cards };
+      },
+
+      playCombination() {
+        if (this.currentTurn !== 'player' || !this.hasDrawn || this.selectedIdsOrdered.length < 3) return;
+        const orderedCards = this.selectedIdsOrdered.map(id => this.playerHand.find(c => c.id === id)).filter(Boolean);
+        const check = this.validateUserMeld(orderedCards);
+        if (!check.valid) return alert(check.msg);
+
+        if (this.obligatedId && orderedCards.some(c => c.id === this.obligatedId)) this.obligatedId = null;
+
+        SoundEngine.playMeld();
+        const cardIds = new Set(orderedCards.map(c => c.id));
+        this.playerHand = this.playerHand.filter(c => !cardIds.has(c.id));
+        
+        const meldObj = { cards: orderedCards, score: check.score, isDouble: check.isDouble, createdThisTurn: true };
+        this.playerMelds.push(meldObj);
+        this.selectedIdsOrdered = [];
+
+        if (this.isOnlineGame) this.broadcastMove('meld', { meld: meldObj });
+
+        if (this.playerHand.length === 0) {
+          if (this.isOnlineGame) this.broadcastMove('round_end', { botRemainingHand: this.playerHand });
+          this.endRound('player');
+          return;
+        }
+        this.render();
+      },
+
+      attachCardToMeldDirectly(cardToAttach, cardIdx, meldIndex, isPlayerTarget = true) {
+        const targetMeld = (isPlayerTarget ? this.playerMelds : this.botMelds)[meldIndex];
+        if (targetMeld.createdThisTurn) return alert("⚠️ Non puoi attaccare carte a una calata creata in questo turno!");
+
+        const candidateOrderings = [
+          [...targetMeld.cards, cardToAttach],
+          [cardToAttach, ...targetMeld.cards]
+        ];
+
+        let validResult = null;
+        let bestCards = null;
+
+        for (const testCards of candidateOrderings) {
+          const res = this.validateUserMeld(testCards);
+          if (res.valid) { validResult = res; bestCards = testCards; break; }
+        }
+
+        if (validResult) {
+          SoundEngine.playMeld();
+          this.playerHand.splice(cardIdx, 1);
+          targetMeld.cards = bestCards;
+          targetMeld.score = validResult.score;
+          targetMeld.isDouble = validResult.isDouble;
+
+          if (this.obligatedId === cardToAttach.id) this.obligatedId = null;
+          this.selectedIdsOrdered = [];
+
+          if (this.isOnlineGame) {
+            this.broadcastMove('attach_meld', {
+              meldIndex,
+              isPlayerTarget,
+              cards: bestCards,
+              score: validResult.score,
+              isDouble: validResult.isDouble
+            });
+          }
+
+          if (this.playerHand.length === 0) {
+            if (this.isOnlineGame) this.broadcastMove('round_end', { botRemainingHand: this.playerHand });
+            this.endRound('player');
+            return;
+          }
+          this.render();
+        } else {
+          alert("Questa carta non si lega!");
+        }
+      },
+
+      discardCard() {
+        if (this.currentTurn !== 'player' || !this.hasDrawn) return;
+        if (this.obligatedId) return alert("Devi prima calare la carta raccolta!");
+        if (this.selectedIdsOrdered.length !== 1) return alert("Seleziona 1 carta da scartare.");
+
+        const discardId = this.selectedIdsOrdered[0];
+        const cardIndex = this.playerHand.findIndex(c => c.id === discardId);
+        const card = this.playerHand.splice(cardIndex, 1)[0];
+
+        SoundEngine.playSlide();
+        this.discardPile.push(card);
+        this.selectedIdsOrdered = [];
+        this.hasDrawn = false;
+        this.playerMelds.forEach(m => m.createdThisTurn = false);
+
+        if (this.isOnlineGame) this.broadcastMove('discard', { card });
+
+        if (this.playerHand.length === 0) {
+          if (this.isOnlineGame) this.broadcastMove('round_end', { botRemainingHand: this.playerHand });
+          this.endRound('player');
+          return;
+        }
+
+        this.currentTurn = 'bot';
+        this.render();
+
+        if (!this.isOnlineGame) {
+          setTimeout(() => this.runBotTurn(), 600);
+        }
+      },
+
+      runBotTurn() {
+        setTimeout(() => {
+          if (this.deck.length > 0) this.botHand.push(this.deck.pop());
+          else if (this.discardPile.length > 0) this.botHand.push(this.discardPile.pop());
+          else return this.endRound('deck_empty');
+
+          SoundEngine.playSlide();
+          this.render();
+
+          setTimeout(() => {
+            if (this.botHand.length > 0) {
+              this.discardPile.push(this.botHand.shift());
+              SoundEngine.playSlide();
+            }
+            this.currentTurn = 'player';
+            this.hasDrawn = false;
+            this.render();
+          }, 600);
+        }, 600);
+      },
+
+      async endRound(winner) {
+        SoundEngine.playEnd();
+
+        if (window.CrazyGames && window.CrazyGames.SDK.game) {
+          window.CrazyGames.SDK.game.gameplayStop();
+        }
+
+        // Mostra annuncio Midgame su CrazyGames tra le mani
+        if (window.CrazyGames && window.CrazyGames.SDK.ad) {
+          try {
+            await window.CrazyGames.SDK.ad.requestAd('midgame');
+          } catch (e) {
+            console.log("Annuncio non disponibile.");
+          }
+        }
+
+        const pMeldPts = this.playerMelds.reduce((s, m) => s + m.score, 0);
+        const bMeldPts = this.botMelds.reduce((s, m) => s + m.score, 0);
+        const pBonus = (winner === 'player') ? 300 : 0;
+        const bBonus = (winner === 'bot') ? 300 : 0;
+        const pHandPenalty = this.playerHand.reduce((s, c) => s + (c?.points || 0), 0);
+        const bHandPenalty = this.botHand.reduce((s, c) => s + (c?.points || 0), 0);
+
+        this.playerMatchScore += (pMeldPts + pBonus - pHandPenalty);
+        this.botMatchScore += (bMeldPts + bBonus - bHandPenalty);
+
+        document.getElementById('rnd-p-melds').innerText = `${pMeldPts} pt`;
+        document.getElementById('rnd-b-melds').innerText = `${bMeldPts} pt`;
+        document.getElementById('rnd-p-bonus').innerText = `+${pBonus} pt`;
+        document.getElementById('rnd-b-bonus').innerText = `+${bBonus} pt`;
+        document.getElementById('rnd-p-hand-pen').innerText = `-${pHandPenalty} pt`;
+        document.getElementById('rnd-b-hand-pen').innerText = `-${bHandPenalty} pt`;
+        document.getElementById('rnd-p-total-match').innerText = `${this.playerMatchScore} pt`;
+        document.getElementById('rnd-b-total-match').innerText = `${this.botMatchScore} pt`;
+
+        document.getElementById('modal-round-end').classList.add('open');
+      },
+
+      handleNextRoundOrEnd() {
+        document.getElementById('modal-round-end').classList.remove('open');
+        this.quitToMenu();
+      },
+
+      sortHandByValue() {
+        SoundEngine.playSlide();
+        this.playerHand.sort((a, b) => a.val - b.val);
+        this.render();
+      },
+
+      sortHandBySuit() {
+        SoundEngine.playSlide();
+        this.playerHand.sort((a, b) => (a.suit.order - b.suit.order || a.val - b.val));
+        this.render();
+      },
+
+      clearSelection() {
+        this.selectedIdsOrdered = [];
+        this.render();
+      },
+
+      toggleCard(id) {
+        const idx = this.selectedIdsOrdered.indexOf(id);
+        if (idx !== -1) this.selectedIdsOrdered.splice(idx, 1);
+        else this.selectedIdsOrdered.push(id);
+        this.render();
+      },
+
+      render() {
+        const badge = document.getElementById('hud-turn-badge');
+        const deckBtn = document.getElementById('deck-draw-btn');
+        const btnMeld = document.getElementById('btn-action-meld');
+        const btnDisc = document.getElementById('btn-action-discard');
+
+        if (this.currentTurn === 'player') {
+          if (!this.hasDrawn) {
+            badge.innerText = "👉 Pesca una carta";
+            badge.className = "turn-badge must-draw";
+            deckBtn.classList.add('animated-draw-prompt');
+            btnMeld.classList.add('btn-lock');
+            btnDisc.classList.add('btn-lock');
+          } else {
+            badge.innerText = "Tuo turno: Cala / Scarta";
+            badge.className = "turn-badge player-turn-active";
+            deckBtn.classList.remove('animated-draw-prompt');
+            btnMeld.classList.remove('btn-lock');
+            btnDisc.classList.remove('btn-lock');
+          }
+        } else {
+          badge.innerText = `Turno avversario...`;
+          badge.className = "turn-badge bot-turn";
+          deckBtn.classList.remove('animated-draw-prompt');
+          btnMeld.classList.add('btn-lock');
+          btnDisc.classList.add('btn-lock');
+        }
+
+        document.getElementById('bot-card-count-hud').innerText = `${this.botHand.length}`;
+        document.getElementById('hud-bot-score-text').innerText = `${this.botMelds.reduce((s, m) => s + m.score, 0)} pt`;
+        document.getElementById('hud-player-details').innerText = `${this.playerMelds.reduce((s, m) => s + m.score, 0)} pt`;
+        document.getElementById('deck-left-count').innerText = `${this.deck.length}`;
+
+        // Scarti
+        const discardRack = document.getElementById('discard-stream-rack');
+        discardRack.innerHTML = '';
+        document.getElementById('discard-count-label').innerText = `${this.discardPile.length}`;
+        this.discardPile.forEach((card, idx) => {
+          const cardEl = this.createCardEl(card, false, true);
+          cardEl.classList.add('discard-item');
+          cardEl.onclick = () => this.drawFromDiscard(idx);
+          discardRack.appendChild(cardEl);
+        });
+        discardRack.scrollLeft = discardRack.scrollWidth;
+
+        // Calate Tavolo
+        this.renderMeldsRack('player-melds-rack', 'player-melds-count', this.playerMelds, true);
+        this.renderMeldsRack('bot-melds-rack', 'bot-melds-count', this.botMelds, false);
+
+        // Mano Giocatore
+        const handRack = document.getElementById('player-cards-rack');
+        handRack.innerHTML = '';
+        const singleLane = document.createElement('div');
+        singleLane.className = 'hand-scroll-lane';
+
+        this.playerHand.forEach(card => {
+          const isSelected = this.selectedIdsOrdered.includes(card.id);
+          const cardEl = this.createCardEl(card, isSelected, false);
+          cardEl.draggable = true;
+          cardEl.ondragstart = (e) => { this.draggedCardId = card.id; e.dataTransfer.setData('text/plain', card.id); };
+          cardEl.ondragend = () => { this.draggedCardId = null; document.querySelectorAll('.meld-row').forEach(r => r.classList.remove('drag-over-target')); };
+          cardEl.onclick = () => this.toggleCard(card.id);
+          singleLane.appendChild(cardEl);
+        });
+
+        handRack.appendChild(singleLane);
+      },
+
+      renderMeldsRack(rackId, countId, melds, isPlayer) {
+        const rack = document.getElementById(rackId);
+        rack.innerHTML = '';
+        document.getElementById(countId).innerText = `${melds.length}`;
+
+        melds.forEach((m, idx) => {
+          const row = document.createElement('div');
+          row.className = `meld-row`;
+          row.innerHTML = `<span class="meld-pts-tag">${m.score}p</span>`;
+          m.cards.forEach(c => row.appendChild(this.createCardEl(c, false, false, true)));
+
+          row.ondragover = (e) => { e.preventDefault(); row.classList.add('drag-over-target'); };
+          row.ondragleave = () => row.classList.remove('drag-over-target');
+          row.ondrop = (e) => {
+            e.preventDefault();
+            row.classList.remove('drag-over-target');
+            if (this.draggedCardId) {
+              const cardIdx = this.playerHand.findIndex(c => c.id === this.draggedCardId);
+              if (cardIdx !== -1) this.attachCardToMeldDirectly(this.playerHand[cardIdx], cardIdx, idx, isPlayer);
+            }
+          };
+
+          rack.appendChild(row);
+        });
+      },
+
+      createCardEl(card, isSelected = false, isInteractive = false, isMini = false) {
+        const el = document.createElement('div');
+        if (!card) return el;
+        const col = card.suit?.isRed ? 'red' : 'black';
+        const jk = card.isJoker ? 'is-joker' : '';
+        const mat = card.isMattino ? 'is-mattino' : '';
+        const mini = isMini ? 'mini' : '';
+        const sel = isSelected ? 'is-picked' : '';
+
+        el.className = `card-unit ${col} ${jk} ${mat} ${mini} ${sel}`;
+        let tag = card.isJoker ? '<span class="tag-spec tag-joker">JK</span>' : (card.isMattino ? '<span class="tag-spec tag-mattino">MAT</span>' : '');
+
+        el.innerHTML = `
+          <div class="c-top"><span class="c-val">${card.getLabel ? card.getLabel() : ''}</span><span class="c-suit-s">${card.suit?.symbol || ''}</span></div>
+          <div class="c-center">${card.suit?.symbol || ''}</div>
+          <div class="c-bottom">${tag}<span>${card.points || 0}p</span></div>
+        `;
+        return el;
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => App.init());
+  </script>
+</body>
+</html>
