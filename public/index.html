@@ -195,7 +195,6 @@
     .io-mode-title { font-size: 1.1rem; font-weight: 900; }
     .io-mode-desc { font-size: 0.75rem; color: #cbd5e1; margin-top: 2px; font-weight: 600; }
 
-    /* PANNELLO CONFIGURAZIONE PARTITA (CARTE & PUNTI) */
     .io-game-rules-tray {
       background: var(--io-card);
       border: 1.5px solid var(--io-border);
@@ -216,10 +215,7 @@
       display: block;
       text-align: left;
     }
-    .rule-segment-grid {
-      display: grid;
-      gap: 8px;
-    }
+    .rule-segment-grid { display: grid; gap: 8px; }
     .grid-2 { grid-template-columns: 1fr 1fr; }
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
 
@@ -259,7 +255,6 @@
       box-shadow: 0 12px 30px rgba(0,0,0,0.7), inset 0 2px 2px #fff;
     }
 
-    /* TROPHY ROAD */
     .trophy-road-card {
       background: rgba(0, 0, 0, 0.55);
       border: 1.5px solid rgba(245, 158, 11, 0.4);
@@ -310,7 +305,6 @@
       justify-content: center;
     }
 
-    /* ANIMAZIONE MONETA 3D */
     #in-game-coin-overlay {
       position: absolute;
       inset: 0;
@@ -381,7 +375,6 @@
     .animate-flip-player { animation: flipCoin3sPlayer 3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
     .animate-flip-opponent { animation: flipCoin3sOpponent 3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
 
-    /* LEADERBOARD & MODALS */
     .leaderboard-tray {
       background: var(--io-card);
       border: 1.5px solid var(--io-border);
@@ -491,7 +484,6 @@
     .stat-val { font-weight: 900; font-size: 1.45rem; color: #fff; }
     .stat-lbl { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; margin-top: 2px; }
 
-    /* TAVOLO DI GIOCO */
     #game-layout {
       position: absolute;
       inset: 4px;
@@ -804,7 +796,7 @@
         </div>
       </div>
 
-      <!-- NUOVO PANNELLO: FORMATO CARTE & TARGET PUNTI -->
+      <!-- FORMATO CARTE & TARGET PUNTI -->
       <div class="io-game-rules-tray">
         <div>
           <span class="rule-section-label">Distribuzione Carte</span>
@@ -841,13 +833,14 @@
 
       <button class="io-play-cta" id="btn-start-game-cta" onclick="App.handleStartGameClick()">GIOCA ORA ⚔️</button>
 
+      <!-- CLASSIFICA GLOBALE DINAMICA (SOLO UTENTI REALI) -->
       <div class="leaderboard-tray">
         <div class="lb-header-row">
           <span>🌍 Classifica Globale</span>
-          <span style="font-size:0.75rem; color:#93c5fd;">TOP 10</span>
+          <span style="font-size:0.75rem; color:#93c5fd;">TOP 10 REALI</span>
         </div>
         <div class="lb-list" id="global-leaderboard-list">
-          <div style="text-align:center; font-size:0.85rem; color:#94a3b8; padding:8px;">Caricamento...</div>
+          <div style="text-align:center; font-size:0.85rem; color:#94a3b8; padding:8px;">Nessun giocatore in classifica. Sii il primo!</div>
         </div>
       </div>
 
@@ -983,6 +976,7 @@
         </div>
       </div>
 
+      <!-- AREA CALATE DIVISA IN DUE SENZA SCRITTE -->
       <div class="table-melds-container">
         <div class="melds-lane-opponent">
           <span class="lane-counter-badge badge-opp" id="bot-melds-count">0</span>
@@ -1021,7 +1015,7 @@
     </div>
   </div>
 
-  <!-- MODAL FINE PARTITA CON GESTIONE MATCH A PUNTI -->
+  <!-- MODAL FINE PARTITA -->
   <div id="modal-round-end" class="modal-overlay">
     <div class="modal-box">
       <h2 id="round-title" style="color:var(--gold-light); font-size:1.7rem;">MANO CONCLUSA!</h2>
@@ -1503,6 +1497,7 @@
 
         this.socket.emit('sync_profile', this.user);
 
+        // Rendering dinamico classifica solo utenti reali
         this.socket.on('leaderboard_update', (list) => {
           this.renderLeaderboard(list);
         });
@@ -1634,10 +1629,16 @@
       renderLeaderboard(list) {
         const lbEl = document.getElementById('global-leaderboard-list');
         lbEl.innerHTML = '';
+
+        if (!list || list.length === 0) {
+          lbEl.innerHTML = '<div style="text-align:center; font-size:0.85rem; color:#94a3b8; padding:8px;">Nessun giocatore in classifica. Sii il primo!</div>';
+          return;
+        }
+
         list.slice(0, 10).forEach((p, idx) => {
           const league = this.getLeague(p.trophies);
           const city = this.getCityObj(p.city || 'modena');
-          const isMe = p.name.toLowerCase() === this.user.name.toLowerCase();
+          const isMe = this.user && this.user.name && (p.name.toLowerCase() === this.user.name.toLowerCase());
 
           const item = document.createElement('div');
           item.className = `lb-item ${isMe ? 'is-me' : ''}`;
@@ -2397,7 +2398,6 @@
 
         const totalCards = this.playerHand.length;
 
-        // Supporto fluido a 2 corsie per 33 carte
         if (totalCards > 22) {
           const laneTop = document.createElement('div');
           laneTop.className = 'hand-scroll-lane';

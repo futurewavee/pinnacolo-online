@@ -12,13 +12,8 @@ app.use(express.static('public'));
 const matchmakingQueues = {};
 const rooms = {};
 
-let globalLeaderboard = [
-  { name: "Ghirlandina_King", city: "modena", trophies: 2450, wins: 142, losses: 38 },
-  { name: "Luciano_Sassuolo", city: "sassuolo", trophies: 1820, wins: 95, losses: 41 },
-  { name: "Elena_Vignola", city: "vignola", trophies: 1240, wins: 62, losses: 30 },
-  { name: "Marco_Carpi", city: "carpi", trophies: 720, wins: 34, losses: 18 },
-  { name: "Franco_Nonantola", city: "nonantola", trophies: 280, wins: 12, losses: 5 }
-];
+// Classifica reale dinamica (inizialmente vuota, popolata solo da utenti reali)
+let globalLeaderboard = [];
 
 const SUITS = ['HEARTS', 'DIAMONDS', 'CLUBS', 'SPADES'];
 
@@ -50,27 +45,33 @@ function createFullDeck() {
 io.on('connection', (socket) => {
   socket.emit('leaderboard_update', globalLeaderboard);
 
+  // Sincronizzazione profilo reale
   socket.on('sync_profile', (userData) => {
+    if (!userData || !userData.name) return;
     socket.userData = userData;
-    const existing = globalLeaderboard.find(u => u.name.toLowerCase() === userData.name.toLowerCase());
+
+    const existing = globalLeaderboard.find(u => u.name.trim().toLowerCase() === userData.name.trim().toLowerCase());
     if (existing) {
-      existing.trophies = userData.trophies;
-      existing.wins = userData.wins;
-      existing.losses = userData.losses;
-      existing.city = userData.city;
+      existing.trophies = userData.trophies || 0;
+      existing.wins = userData.wins || 0;
+      existing.losses = userData.losses || 0;
+      existing.city = userData.city || 'modena';
     } else {
       globalLeaderboard.push({
-        name: userData.name,
+        name: userData.name.trim(),
         city: userData.city || 'modena',
-        trophies: userData.trophies,
-        wins: userData.wins,
-        losses: userData.losses
+        trophies: userData.trophies || 0,
+        wins: userData.wins || 0,
+        losses: userData.losses || 0
       });
     }
+
+    // Ordina per trofei decrescenti
     globalLeaderboard.sort((a, b) => b.trophies - a.trophies);
     io.emit('leaderboard_update', globalLeaderboard);
   });
 
+  // Matchmaking
   socket.on('join_matchmaking', (params) => {
     socket.userData = params.user || { name: "Giocatore", trophies: 0, city: "modena" };
     const queueKey = `${params.handSize || 19}_${params.targetScore || 'quick'}`;
