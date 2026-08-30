@@ -8,10 +8,18 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
-let matchmakingQueue = null;
+// Code di matchmaking separate per formato e target
+const matchmakingQueues = {};
 const rooms = {};
 
-// Helper carte per il server
+let globalLeaderboard = [
+  { name: "Ghirlandina_King", city: "modena", trophies: 2450, wins: 142, losses: 38 },
+  { name: "Luciano_Sassuolo", city: "sassuolo", trophies: 1820, wins: 95, losses: 41 },
+  { name: "Elena_Vignola", city: "vignola", trophies: 1240, wins: 62, losses: 30 },
+  { name: "Marco_Carpi", city: "carpi", trophies: 720, wins: 34, losses: 18 },
+  { name: "Franco_Nonantola", city: "nonantola", trophies: 280, wins: 12, losses: 5 }
+];
+
 const SUITS = ['HEARTS', 'DIAMONDS', 'CLUBS', 'SPADES'];
 
 function createFullDeck() {
@@ -26,14 +34,7 @@ function createFullDeck() {
         else if (v === 1) pts = 15;
         else if (v >= 7 && v <= 13) pts = 10;
         
-        d.push({
-          id: `c-${idCount++}`,
-          val: v,
-          suitKey: sKey,
-          isJoker: false,
-          isMattino,
-          points: pts
-        });
+        d.push({ id: `c-${idCount++}`, val: v, suitKey: sKey, isJoker: false, isMattino, points: pts });
       }
     }
     d.push({ id: `j-${idCount++}`, val: 0, suitKey: null, isJoker: true, isMattino: false, points: 30 });
@@ -47,26 +48,50 @@ function createFullDeck() {
 }
 
 io.on('connection', (socket) => {
-  console.log('Giocatore connesso:', socket.id);
+  socket.emit('leaderboard_update', globalLeaderboard);
 
-  // 1. MATCHMAKING
-  socket.on('join_matchmaking', (userData) => {
-    socket.userData = userData || { name: "Giocatore", score: 1250 };
+  socket.on('sync_profile', (userData) => {
+    socket.userData = userData;
+    const existing = globalLeaderboard.find(u => u.name.toLowerCase() === userData.name.toLowerCase());
+    if (existing) {
+      existing.trophies = userData.trophies;
+      existing.wins = userData.wins;
+      existing.losses = userData.losses;
+      existing.city = userData.city;
+    } else {
+      globalLeaderboard.push({
+        name: userData.name,
+        city: userData.city || 'modena',
+        trophies: userData.trophies,
+        wins: userData.wins,
+        losses: userData.losses
+      });
+    }
+    globalLeaderboard.sort((a, b) => b.trophies - a.trophies);
+    io.emit('leaderboard_update', globalLeaderboard);
+  });
 
-    if (!matchmakingQueue) {
-      matchmakingQueue = socket;
+  socket.on('join_matchmaking', (params) => {
+    socket.userData = params.user || { name: "Giocatore", trophies: 0, city: "modena" };
+    const queueKey = `${params.handSize || 19}_${params.targetScore || 'quick'}`;
+
+    if (!matchmakingQueues[queueKey]) {
+      matchmakingQueues[queueKey] = socket;
+      socket.currentQueueKey = queueKey;
       socket.emit('mm_waiting');
     } else {
-      const p1 = matchmakingQueue;
+      const p1 = matchmakingQueues[queueKey];
       const p2 = socket;
-      matchmakingQueue = null;
+      delete matchmakingQueues[queueKey];
+      p1.currentQueueKey = null;
+      p2.currentQueueKey = null;
 
       const roomId = `room_${p1.id}_${p2.id}`;
       p1.join(roomId);
       p2.join(roomId);
 
+      const handSize = params.handSize === 33 ? 33 : 19;
       const deck = createFullDeck();
-      const handSize = 19;
       const p1Hand = deck.splice(0, handSize);
       const p2Hand = deck.splice(0, handSize);
       const initialDiscard = [deck.pop()];
@@ -74,8 +99,10 @@ io.on('connection', (socket) => {
 
       rooms[roomId] = {
         roomId,
-        p1: { socket: p1, name: p1.userData.name, score: p1.userData.score },
-        p2: { socket: p2, name: p2.userData.name, score: p2.userData.score },
+        handSize,
+        targetScore: params.targetScore,
+        p1: { socket: p1, data: p1.userData, matchScore: 0 },
+        p2: { socket: p2, data: p2.userData, matchScore: 0 },
         deck,
         discardPile: initialDiscard,
         currentTurn: starter
@@ -87,9 +114,11 @@ io.on('connection', (socket) => {
         yourTurn: starter === 'p1',
         yourHand: p1Hand,
         opponentHandCount: p2Hand.length,
-        opponentData: { name: p2.userData.name, score: p2.userData.score, avatar: "👤" },
+        opponentData: p2.userData,
         discardPile: initialDiscard,
-        deckCount: deck.length
+        deckCount: deck.length,
+        handSize,
+        targetScore: params.targetScore
       });
 
       p2.emit('game_started', {
@@ -98,22 +127,22 @@ io.on('connection', (socket) => {
         yourTurn: starter === 'p2',
         yourHand: p2Hand,
         opponentHandCount: p1Hand.length,
-        opponentData: { name: p1.userData.name, score: p1.userData.score, avatar: "👤" },
+        opponentData: p1.userData,
         discardPile: initialDiscard,
-        deckCount: deck.length
+        deckCount: deck.length,
+        handSize,
+        targetScore: params.targetScore
       });
     }
   });
 
   socket.on('cancel_matchmaking', () => {
-    if (matchmakingQueue === socket) {
-      matchmakingQueue = null;
+    if (socket.currentQueueKey && matchmakingQueues[socket.currentQueueKey] === socket) {
+      delete matchmakingQueues[socket.currentQueueKey];
+      socket.currentQueueKey = null;
     }
   });
 
-  // 2. AZIONI DI GIOCO ONLINE
-
-  // Pesca dal mazzo
   socket.on('action_draw_deck', (data) => {
     const room = rooms[data.roomId];
     if (!room) return;
@@ -126,7 +155,6 @@ io.on('connection', (socket) => {
     socket.to(data.roomId).emit('opponent_drew_deck', { deckCount: room.deck.length });
   });
 
-  // Raccogli dagli scarti
   socket.on('action_draw_discard', (data) => {
     const room = rooms[data.roomId];
     if (!room) return;
@@ -138,7 +166,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Nuova calata
   socket.on('action_play_meld', (data) => {
     socket.to(data.roomId).emit('opponent_played_meld', {
       meld: data.meld,
@@ -146,17 +173,15 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Attacco carta a calata esistente
   socket.on('action_attach_card', (data) => {
     socket.to(data.roomId).emit('opponent_attached_card', {
       meldIndex: data.meldIndex,
-      isPlayerTarget: data.isOpponentTarget, // Invertito per chi riceve
+      isPlayerTarget: data.isOpponentTarget,
       updatedMeld: data.updatedMeld,
       oppHandCount: data.remainingCards
     });
   });
 
-  // Scarto e cambio turno
   socket.on('action_discard', (data) => {
     const room = rooms[data.roomId];
     if (room) {
@@ -166,29 +191,56 @@ io.on('connection', (socket) => {
         discardPile: room.discardPile,
         oppHandCount: data.remainingCards
       });
-      // Passa il turno
       socket.emit('set_turn', false);
       socket.to(data.roomId).emit('set_turn', true);
     }
   });
 
-  // Chiusura partita
   socket.on('action_round_closed', (data) => {
     socket.to(data.roomId).emit('round_over_winner', {
       winnerRole: data.winnerRole,
-      winnerHand: data.hand
+      isSecca: data.isSecca
     });
   });
 
-  // Disconnessione
+  socket.on('start_next_round', (data) => {
+    const room = rooms[data.roomId];
+    if (!room) return;
+    const deck = createFullDeck();
+    const p1Hand = deck.splice(0, room.handSize);
+    const p2Hand = deck.splice(0, room.handSize);
+    const initialDiscard = [deck.pop()];
+    const starter = Math.random() < 0.5 ? 'p1' : 'p2';
+
+    room.deck = deck;
+    room.discardPile = initialDiscard;
+    room.currentTurn = starter;
+
+    room.p1.socket.emit('next_round_started', {
+      yourTurn: starter === 'p1',
+      yourHand: p1Hand,
+      opponentHandCount: p2Hand.length,
+      discardPile: initialDiscard,
+      deckCount: deck.length
+    });
+
+    room.p2.socket.emit('next_round_started', {
+      yourTurn: starter === 'p2',
+      yourHand: p2Hand,
+      opponentHandCount: p1Hand.length,
+      discardPile: initialDiscard,
+      deckCount: deck.length
+    });
+  });
+
   socket.on('disconnect', () => {
-    if (matchmakingQueue === socket) {
-      matchmakingQueue = null;
+    if (socket.currentQueueKey && matchmakingQueues[socket.currentQueueKey] === socket) {
+      delete matchmakingQueues[socket.currentQueueKey];
     }
     for (const roomId in rooms) {
       const room = rooms[roomId];
       if (room.p1.socket === socket || room.p2.socket === socket) {
-        socket.to(roomId).emit('opponent_disconnected', 'L\'avversario si è disconnesso dalla partita.');
+        socket.to(roomId).emit('opponent_disconnected', "L'avversario si è disconnesso.");
         delete rooms[roomId];
       }
     }
@@ -196,6 +248,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Pinnacolo Server online su http://localhost:${PORT}`);
-});
+server.listen(PORT, () => console.log(`Pinnacolo Server online su http://localhost:${PORT}`));
