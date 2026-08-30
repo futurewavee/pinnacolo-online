@@ -548,6 +548,9 @@
       cursor: pointer;
     }
 
+    /* ==========================================================================
+       AREA CALATE CON SCROLLBAR VERTICALE DEDICATA QUANDO SI SUPERA LO SPAZIO
+       ========================================================================== */
     .table-melds-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -557,29 +560,61 @@
       padding: 6px;
       overflow: hidden;
       min-height: 0;
+      height: 100%;
       position: relative;
     }
+
     .melds-lane-opponent {
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%);
       border: 1.5px dashed rgba(239, 68, 68, 0.35);
       border-radius: 10px;
-      padding: 6px;
+      padding: 4px;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
     }
+
     .melds-lane-player {
       background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%);
       border: 1.5px dashed rgba(56, 189, 248, 0.35);
       border-radius: 10px;
-      padding: 6px;
+      padding: 4px;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
     }
+
+    /* SCROLLBAR VERTICALE FLUIDA STILE RETRO-CASINÒ */
     .melds-lane-scroll {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
       overflow-y: auto;
+      overflow-x: hidden;
       height: 100%;
-      padding-top: 2px;
+      padding: 22px 2px 4px 2px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .melds-lane-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .melds-lane-scroll::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 4px;
+    }
+    .melds-lane-scroll::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--gold-dark), var(--gold-primary));
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .melds-lane-scroll::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-light);
     }
 
     .lane-counter-badge {
@@ -607,6 +642,7 @@
       cursor: pointer;
       position: relative;
       transition: all 0.2s ease;
+      flex-shrink: 0;
     }
     .meld-row.is-double {
       border: 1.5px solid var(--gold-primary);
@@ -834,7 +870,7 @@
 
       <button class="io-play-cta" id="btn-start-game-cta" onclick="App.handleStartGameClick()">GIOCA ORA ⚔️</button>
 
-      <!-- CLASSIFICA GLOBALE DINAMICA (SOLO UTENTI REALI) -->
+      <!-- CLASSIFICA GLOBALE DINAMICA -->
       <div class="leaderboard-tray">
         <div class="lb-header-row">
           <span>🌍 Classifica Globale</span>
@@ -977,7 +1013,7 @@
         </div>
       </div>
 
-      <!-- AREA CALATE DIVISA IN DUE SENZA SCRITTE -->
+      <!-- AREA CALATE CON SCROLLBAR VERTICALE SE SUPERATI I LIMITI -->
       <div class="table-melds-container">
         <div class="melds-lane-opponent">
           <span class="lane-counter-badge badge-opp" id="bot-melds-count">0</span>
@@ -1268,7 +1304,6 @@
       },
 
       onNameInput(val) {
-        // Debounce per evitare sync a raffica a ogni singola lettera
         clearTimeout(this.nameDebounceTimer);
         this.nameDebounceTimer = setTimeout(() => {
           this.onNameCommitted(val);
