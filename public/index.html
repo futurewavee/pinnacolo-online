@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#030d06" />
+  <title>Pinnacolo Modenese Deluxe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&family=Tenor+Sans&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --felt-radial: #14532d;
+      --felt-main: #0a2916;
+      --felt-dark: #020b05;
+      --gold-light: #fef08a;
+      --gold-primary: #d4af37;
+      --gold-dark: #8c7121;
+      --card-bg: #ffffff;
+      --card-border: #cfc7b8;
+      --card-w: clamp(52px, 11vw, 76px);
+      --card-h: clamp(78px, 16.5vw, 114px);
+      --mini-w: clamp(38px, 8vw, 50px);
+      --mini-h: clamp(56px, 12vw, 74px);
+
+      /* Apple Design Tokens */
+      --apple-glass: rgba(18, 38, 26, 0.7);
+      --apple-glass-border: rgba(255, 255, 255, 0.16);
+      --apple-glass-active: rgba(212, 175, 55, 0.2);
+      --apple-blur: blur(28px);
+      --apple-radius-lg: 24px;
+      --apple-radius-md: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Outfit', sans-serif;
+      background: radial-gradient(ellipse at 50% 35%, var(--felt-radial) 0%, var(--felt-main) 55%, var(--felt-dark) 100%);
+      color: #fff;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #table-edge {
+      position: absolute;
+      inset: 2px;
+      border: clamp(4px, 1vw, 8px) solid #1e0d04;
+      border-radius: clamp(14px, 2.5vw, 24px);
+      box-shadow: inset 0 0 45px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.95);
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      padding: 14px;
+    }
+    .screen.active { display: flex; }
+
+    #screen-menu {
+      overflow-y: auto;
+      justify-content: flex-start;
+      padding: clamp(24px, 5vw, 44px) 16px;
+    }
+
+    .apple-menu-wrapper {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .hero-title {
+      font-family: 'Tenor Sans', sans-serif;
+      font-size: clamp(2.4rem, 8vw, 4.2rem);
+      color: #fefce8;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.4);
+      letter-spacing: clamp(6px, 2vw, 12px);
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .hero-sub {
+      font-family: 'Space Grotesk', sans-serif;
+      color: #86efac;
+      font-size: clamp(0.75rem, 2.2vw, 0.95rem);
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      margin-top: 6px;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .apple-profile-card {
+      background: var(--apple-glass);
+      border: 1px solid var(--apple-glass-border);
+      border-radius: var(--apple-radius-md);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: var(--apple-blur);
+      -webkit-backdrop-filter: var(--apple-blur);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+    .profile-left { display: flex; align-items: center; gap: 12px; }
+    .profile-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .profile-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .profile-rank {
+      font-size: 0.75rem;
+      color: #93c5fd;
+      font-weight: 500;
+    }
+    .profile-score-badge {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .tray-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-align: left;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .apple-main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .apple-large-card {
+      background: var(--apple-glass);
+      border: 1.5px solid var(--apple-glass-border);
+      border-radius: var(--apple-radius-lg);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      backdrop-filter: var(--apple-blur);
+      -webkit-backdrop-filter: var(--apple-blur);
+      transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    .apple-large-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.35);
+    }
+    .apple-large-card.active {
+      border-color: var(--gold-primary);
+      background: var(--apple-glass-active);
+      box-shadow: 0 0 25px rgba(212,175,55,0.45);
+      transform: scale(1.02);
+    }
+    .card-glyph {
+      font-size: 2.8rem;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));
+    }
+    .card-title-lg {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #fff;
+    }
+    .card-desc-lg {
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .apple-options-tray {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .apple-sub-card {
+      background: var(--apple-glass);
+      border: 1px solid var(--apple-glass-border);
+      border-radius: var(--apple-radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: var(--apple-blur);
+    }
+
+    .apple-segment-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .grid-2-col { grid-template-columns: 1fr 1fr; }
+    .grid-3-col { grid-template-columns: repeat(3, 1fr); }
+
+    .apple-segment-item {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .apple-segment-item:hover { border-color: rgba(255,255,255,0.3); }
+    .apple-segment-item.active {
+      background: linear-gradient(135deg, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.1) 100%);
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 14px rgba(212,175,55,0.4);
+    }
+    .seg-main { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.95rem; color: #fff; }
+    .seg-sub { font-size: 0.68rem; color: #94a3b8; margin-top: 3px; }
+
+    .apple-cta-play {
+      background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #9a781b 100%);
+      color: #0c1a0e;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 1.12rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--apple-radius-md);
+      padding: 16px 24px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 1px #fff;
+      transition: all 0.2s ease;
+      margin-top: 6px;
+    }
+    .apple-cta-play:active { transform: scale(0.98); }
+
+    .btn-rules-modal {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #e2e8f0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      border-radius: 14px;
+      padding: 12px;
+      cursor: pointer;
+    }
+
+    #screen-matchmaking {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 10, 5, 0.92);
+      backdrop-filter: blur(16px);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 20px;
+    }
+    .radar-spinner {
+      width: 80px;
+      height: 80px;
+      border: 3px solid rgba(56, 189, 248, 0.2);
+      border-top: 3px solid #38bdf8;
+      border-radius: 50%;
+      animation: spinRadar 1s linear infinite;
+    }
+    @keyframes spinRadar {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #game-layout {
+      position: absolute;
+      inset: 4px;
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+      gap: 4px;
+      z-index: 10;
+      padding: 4px 6px;
+    }
+
+    .hud-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      background: rgba(3, 16, 9, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 4px 10px;
+      backdrop-filter: blur(16px);
+      gap: 6px;
+    }
+
+    .pill { display: flex; align-items: center; gap: 6px; }
+    .pill-player { justify-content: flex-end; }
+
+    .bot-status-pill {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .bot-status-pill.thinking {
+      border-color: #fbbf24;
+      color: #fde68a;
+      background: rgba(245, 158, 11, 0.25);
+      animation: pulseThinking 1s infinite alternate;
+    }
+    @keyframes pulseThinking {
+      0% { box-shadow: 0 0 4px #fbbf24; }
+      100% { box-shadow: 0 0 16px #fbbf24; }
+    }
+
+    .pill-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; color: #ffffff; }
+    .pill-sub { font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 600; color: #6ee7b7; }
+
+    .turn-badge {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(0.7rem, 2vw, 0.82rem);
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      text-align: center;
+    }
+    .turn-badge.must-draw {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(185, 28, 28, 0.45) 100%);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+    }
+    .turn-badge.player-turn-active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3) 0%, rgba(2, 132, 199, 0.45) 100%);
+      border: 1px solid #38bdf8;
+      color: #bae6fd;
+    }
+    .turn-badge.bot-turn { background: rgba(0, 0, 0, 0.5); border-color: rgba(255, 255, 255, 0.1); color: #cbd5e1; }
+
+    .btn-exit {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #cbd5e1;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .table-melds-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(2, 14, 7, 0.55);
+      border-radius: 12px;
+      border: 1.5px dashed rgba(212,175,55,0.3);
+      padding: 6px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .melds-lane {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .melds-lane::-webkit-scrollbar { width: 3px; }
+    .melds-lane::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+    .lane-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(212,175,55,0.25);
+      padding-bottom: 2px;
+      position: sticky;
+      top: 0;
+      background: rgba(3, 16, 8, 0.95);
+      z-index: 5;
+    }
+
+    .meld-row {
+      background: rgba(0,0,0,0.55);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .meld-row:hover { border-color: rgba(255, 255, 255, 0.4); }
+    .meld-row.is-double {
+      border: 1.5px solid var(--gold-primary);
+      background: rgba(212, 175, 55, 0.16);
+      box-shadow: inset 0 0 10px rgba(212,175,55,0.25);
+    }
+    .meld-row.drag-over-target {
+      border-color: #38bdf8 !important;
+      background: rgba(56, 189, 248, 0.2) !important;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.6) !important;
+      transform: scale(1.02);
+    }
+    .meld-pts-tag {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      background: rgba(0,0,0,0.8);
+      padding: 2px 4px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .center-action-dock {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(3, 16, 9, 0.7);
+      border-radius: 12px;
+      padding: 4px 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .draw-deck-target {
+      width: clamp(52px, 10vw, 72px);
+      height: clamp(50px, 10vw, 68px);
+      min-width: clamp(52px, 10vw, 72px);
+      background: repeating-linear-gradient(45deg, #1e3a8a, #1e3a8a 5px, #172554 5px, #172554 10px);
+      border: 2px solid #fff;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .draw-deck-target.animated-draw-prompt {
+      border-color: #fde047;
+      box-shadow: 0 0 16px rgba(253, 224, 71, 0.9);
+      animation: pulseDeck 1s infinite alternate;
+    }
+    @keyframes pulseDeck {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.04); }
+    }
+    .draw-deck-target span { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.75rem; }
+    .deck-count-num { position: absolute; bottom: 2px; font-family: 'Space Grotesk', sans-serif; font-size: 0.65rem; color: var(--gold-light); font-weight: 700; }
+
+    .discard-scroll-ribbon {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .discard-title-row {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #bfdbfe;
+      display: flex;
+      justify-content: space-between;
+    }
+    .discard-scroll-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      overflow-x: auto;
+      padding: 2px;
+    }
+    .discard-scroll-row::-webkit-scrollbar { height: 3px; }
+    .discard-scroll-row::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+    .player-dock {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(3, 16, 9, 0.94);
+      border-radius: 14px;
+      padding: 8px 10px;
+      border: 1px solid rgba(212,175,55,0.4);
+      width: 100%;
+    }
+
+    .action-button-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+      width: 100%;
+      gap: 6px;
+    }
+
+    .btn-game-action {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: clamp(0.72rem, 1.8vw, 0.88rem);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border-radius: 10px;
+      padding: 10px 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+      transition: all 0.16s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+      border: 1px solid transparent;
+    }
+    .btn-game-action:active { transform: scale(0.96); }
+
+    .btn-game-tool {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+      color: #f8fafc;
+    }
+    .btn-game-tool:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .btn-game-meld {
+      background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+    }
+    .btn-game-meld:hover { box-shadow: 0 4px 18px rgba(34, 197, 94, 0.55); }
+
+    .btn-game-discard {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+    }
+    .btn-game-discard:hover { box-shadow: 0 4px 18px rgba(239, 68, 68, 0.55); }
+
+    .btn-lock {
+      opacity: 0.3 !important;
+      pointer-events: none !important;
+      filter: grayscale(1) !important;
+    }
+
+    .hand-cards-rack {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      padding: 4px 2px 2px 2px;
+      overflow: hidden;
+    }
+
+    .hand-scroll-lane {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+      overflow-x: auto;
+      padding: 8px 4px 4px 4px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+    }
+    .hand-scroll-lane::-webkit-scrollbar { height: 6px; }
+    .hand-scroll-lane::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.4); border-radius: 4px; }
+    .hand-scroll-lane::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary));
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .card-unit {
+      flex: 0 0 auto;
+      width: var(--card-w);
+      height: var(--card-h);
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+      color: #111;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 4px 6px;
+      position: relative;
+      cursor: grab;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card-unit:active { cursor: grabbing; }
+    .card-unit.is-picked {
+      transform: translateY(-12px) !important;
+      outline: 3px solid var(--gold-primary);
+      box-shadow: 0 8px 18px rgba(212,175,55,0.85);
+      z-index: 10;
+    }
+    .card-unit.is-dragging { opacity: 0.45; transform: scale(0.95); }
+    .card-unit.red { color: #dc2626; }
+    .card-unit.black { color: #090d16; }
+
+    .card-unit.is-joker {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1.5px solid #f59e0b;
+    }
+    .card-unit.is-mattino {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 1.5px solid #16a34a;
+    }
+
+    .card-unit.mini {
+      flex: 0 0 auto;
+      width: var(--mini-w);
+      height: var(--mini-h);
+      border-radius: 5px;
+      padding: 2px 3px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      cursor: default;
+    }
+    .card-unit.discard-item {
+      flex: 0 0 auto;
+      transform: scale(0.9);
+      margin-right: -6px;
+    }
+
+    .c-top { display: flex; flex-direction: column; line-height: 1; }
+    .c-val { font-family: 'Space Grotesk', sans-serif; font-size: clamp(0.95rem, 2.2vw, 1.25rem); font-weight: 800; letter-spacing: -0.5px; }
+    .mini .c-val { font-size: 0.75rem; }
+    .c-suit-s { font-size: clamp(0.75rem, 1.8vw, 0.95rem); }
+    .mini .c-suit-s { font-size: 0.6rem; }
+
+    .c-center { align-self: center; font-size: clamp(1.1rem, 2.8vw, 1.5rem); line-height: 1; opacity: 0.9; }
+    .mini .c-center { font-size: 0.8rem; }
+
+    .c-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(0.55rem, 1.3vw, 0.7rem);
+      font-weight: 800;
+      color: #64748b;
+      line-height: 1;
+    }
+    .mini .c-bottom { font-size: 0.45rem; }
+
+    .tag-spec {
+      font-size: 0.5rem;
+      padding: 1px 3px;
+      border-radius: 3px;
+      color: #fff;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .tag-joker { background: #d97706; }
+    .tag-mattino { background: #15803d; }
+
+    #in-game-coin-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 13, 6, 0.85);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 400;
+      backdrop-filter: blur(14px);
+    }
+    .coin-perspective-box {
+      perspective: 1000px;
+      width: 130px;
+      height: 130px;
+      margin-bottom: 20px;
+    }
+    .coin-mesh {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      border-radius: 50%;
+    }
+    .coin-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 900;
+      backface-visibility: hidden;
+      border: 4px solid #fff;
+    }
+    .coin-face-player {
+      background: radial-gradient(circle, #38bdf8 0%, #0284c7 70%, #0369a1 100%);
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.8), inset 0 0 15px rgba(0,0,0,0.5);
+      color: #fff;
+    }
+    .coin-face-bot {
+      background: radial-gradient(circle, #f87171 0%, #dc2626 70%, #991b1b 100%);
+      box-shadow: 0 0 35px rgba(239, 68, 68, 0.8), inset 0 0 15px rgba(0,0,0,0.5);
+      color: #fff;
+      transform: rotateY(180deg);
+    }
+
+    @keyframes flipCoin3sPlayer {
+      0% { transform: translateY(0) scale(1) rotateY(0deg); }
+      20% { transform: translateY(-140px) scale(1.3) rotateY(720deg); }
+      45% { transform: translateY(-80px) scale(1.15) rotateY(1440deg); }
+      70% { transform: translateY(-25px) scale(1.05) rotateY(2160deg); }
+      88% { transform: translateY(-6px) scale(1.02) rotateY(2520deg); }
+      100% { transform: translateY(0) scale(1) rotateY(2880deg); }
+    }
+
+    @keyframes flipCoin3sBot {
+      0% { transform: translateY(0) scale(1) rotateY(0deg); }
+      20% { transform: translateY(-140px) scale(1.3) rotateY(720deg); }
+      45% { transform: translateY(-80px) scale(1.15) rotateY(1440deg); }
+      70% { transform: translateY(-25px) scale(1.05) rotateY(2160deg); }
+      88% { transform: translateY(-6px) scale(1.02) rotateY(2700deg); }
+      100% { transform: translateY(0) scale(1) rotateY(3060deg); }
+    }
+
+    .animate-flip-player { animation: flipCoin3sPlayer 3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    .animate-flip-bot { animation: flipCoin3sBot 3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+    #modal-mattino-shift {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 450;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .wild-pos-box {
+      background: #081e12;
+      border: 2px solid var(--gold-primary);
+      border-radius: 16px;
+      max-width: 440px;
+      width: 100%;
+      padding: 22px;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.9);
+    }
+    .wild-choice-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .btn-pos-choice {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid var(--gold-primary);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      padding: 12px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-pos-choice:hover { background: rgba(212,175,55,0.25); }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #081e12;
+      border: 1.5px solid var(--gold-primary);
+      border-radius: 18px;
+      max-width: 480px;
+      width: 100%;
+      padding: 20px;
+      color: #e2e8f0;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      text-align: center;
+    }
+    .score-grid {
+      width: 100%;
+      margin: 12px 0;
+      border-collapse: collapse;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem;
+    }
+    .score-grid th, .score-grid td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(212,175,55,0.25);
+    }
+    .score-grid th { color: var(--gold-light); }
+  </style>
+
+  <!-- LIBRERIA CLIENT SOCKET.IO -->
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <div id="table-edge"></div>
+
+  <!-- SCHERMATA INIZIALE APPLE UI/UX -->
+  <div id="screen-menu" class="screen active">
+    <div class="apple-menu-wrapper">
+      
+      <div class="brand-header">
+        <h1 class="hero-title">Pinnacolo</h1>
+        <p class="hero-sub">Tradizione Modenese</p>
+      </div>
+
+      <div class="apple-profile-card">
+        <div class="profile-left">
+          <div class="profile-avatar">👤</div>
+          <div>
+            <div class="profile-name" id="menu-player-name">Tu (Giocatore)</div>
+            <div class="profile-rank" id="menu-player-rank">Maestro Modenese</div>
+          </div>
+        </div>
+        <div class="profile-score-badge" id="menu-player-score-tag">1250</div>
+      </div>
+
+      <div>
+        <span class="tray-label">Modalità di Gioco</span>
+        <div class="apple-main-grid">
+          <div class="apple-large-card active" id="card-mode-bot" onclick="App.setPlayMode('bot')">
+            <span class="card-glyph">🤖</span>
+            <span class="card-title-lg">Sfida Bot</span>
+            <span class="card-desc-lg">Allenati offline con IA avanzata</span>
+          </div>
+
+          <div class="apple-large-card" id="card-mode-online" onclick="App.setPlayMode('online')">
+            <span class="card-glyph">🌐</span>
+            <span class="card-title-lg">Classificata</span>
+            <span class="card-desc-lg">Matchmaking live contro giocatori</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="apple-options-tray">
+        <div class="apple-sub-card">
+          <span class="tray-label">Distribuzione Carte</span>
+          <div class="apple-segment-grid grid-2-col">
+            <div class="apple-segment-item active" data-format="1v1_19" onclick="App.selectFormat('1v1_19', this)">
+              <span class="seg-main">19 Carte</span>
+              <span class="seg-sub">Classico • Rapido</span>
+            </div>
+            <div class="apple-segment-item" data-format="1v1_33" onclick="App.selectFormat('1v1_33', this)">
+              <span class="seg-main">33 Carte</span>
+              <span class="seg-sub">Lungo • Strategico</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="apple-sub-card">
+          <span class="tray-label">Obiettivo Punti</span>
+          <div class="apple-segment-grid grid-3-col">
+            <div class="apple-segment-item active" data-target="1500" onclick="App.setPointsTarget(1500, this)">
+              <span class="seg-main">1500 pt</span>
+              <span class="seg-sub">Standard</span>
+            </div>
+            <div class="apple-segment-item" data-target="2100" onclick="App.setPointsTarget(2100, this)">
+              <span class="seg-main">2100 pt</span>
+              <span class="seg-sub">Match Lungo</span>
+            </div>
+            <div class="apple-segment-item" data-target="quick" onclick="App.setPointsTarget('quick', this)">
+              <span class="seg-main">Secca</span>
+              <span class="seg-sub">1 Sola Mano</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="apple-sub-card" id="bot-difficulty-tray">
+          <span class="tray-label">Livello Intelligenza Artificiale</span>
+          <div class="apple-segment-grid grid-3-col">
+            <div class="apple-segment-item" data-diff="easy" onclick="App.selectDiff('easy', this)">
+              <span class="seg-main" style="color:#6ee7b7;">Facile</span>
+              <span class="seg-sub">Rilassato</span>
+            </div>
+            <div class="apple-segment-item" data-diff="med" onclick="App.selectDiff('med', this)">
+              <span class="seg-main" style="color:#fde047;">Medio</span>
+              <span class="seg-sub">Equilibrato</span>
+            </div>
+            <div class="apple-segment-item active" data-diff="hard" onclick="App.selectDiff('hard', this)">
+              <span class="seg-main" style="color:#fca5a5;">Esperto</span>
+              <span class="seg-sub">Scale & Strategia</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="apple-cta-play" id="btn-start-game-cta" onclick="App.handleStartGameClick()">Avvia Partita 🪙</button>
+        <button class="btn-rules-modal" onclick="App.openTutorial()">📖 Regole & Punteggi</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MATCHMAKING ONLINE SCREEN -->
+  <div id="screen-matchmaking">
+    <div class="radar-spinner"></div>
+    <h2 style="font-family:'Space Grotesk',sans-serif; color:var(--gold-light); font-size:1.4rem;">Ricerca Giocatore in Corso...</h2>
+    <p style="font-size:0.85rem; color:#93c5fd; text-align:center;" id="mm-status-text">Connessione alla lobby matchmaking...</p>
+    <div style="background:rgba(255,255,255,0.06); padding:10px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); display:flex; align-items:center; gap:10px;" id="mm-opponent-preview">
+      <span style="font-size:1.5rem;">🔍</span>
+      <span>In attesa di un giocatore reale...</span>
+    </div>
+    <button class="btn-exit" style="padding:8px 16px; margin-top:10px;" onclick="App.cancelMatchmaking()">Annulla</button>
+  </div>
+
+  <!-- TAVOLO DI GIOCO -->
+  <div id="screen-game" class="screen">
+    <div id="game-layout">
+
+      <div class="hud-header">
+        <div class="pill">
+          <div class="bot-status-pill" id="bot-status-box">
+            <span id="bot-icon-state">🤖</span>
+            <span id="opp-display-name">Avversario</span>
+            <strong id="bot-card-count-hud">19</strong>
+          </div>
+          <span class="pill-sub" id="hud-bot-score-text">Match: 0 pt</span>
+        </div>
+
+        <div class="turn-badge must-draw" id="hud-turn-badge">👉 Pesca una carta</div>
+
+        <div class="pill pill-player">
+          <div style="display:flex; flex-direction:column; align-items:flex-end;">
+            <span class="pill-title" id="hud-player-name-top">Tu</span>
+            <span class="pill-sub" id="hud-player-details">Match: 0 pt</span>
+          </div>
+          <button class="btn-exit" onclick="App.quitToMenu()">Esci</button>
+        </div>
+      </div>
+
+      <div class="table-melds-container">
+        <div class="melds-lane">
+          <div class="lane-title">
+            <span id="label-melds-opp">Calate Avversario</span>
+            <span id="bot-melds-count">0</span>
+          </div>
+          <div id="bot-melds-rack" style="display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+
+        <div class="melds-lane">
+          <div class="lane-title">
+            <span>Le Tue Calate (Trascina o tocca per attaccare)</span>
+            <span id="player-melds-count">0</span>
+          </div>
+          <div id="player-melds-rack" style="display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+      </div>
+
+      <div class="center-action-dock">
+        <div class="draw-deck-target animated-draw-prompt" id="deck-draw-btn" onclick="App.drawFromDeck()">
+          <span>PESCA</span>
+          <div class="deck-count-num" id="deck-left-count">108</div>
+        </div>
+
+        <div class="discard-scroll-ribbon">
+          <div class="discard-title-row">
+            <span>Fila Scarti (Tocca per raccogliere)</span>
+            <span id="discard-count-label">0</span>
+          </div>
+          <div class="discard-scroll-row" id="discard-stream-rack"></div>
+        </div>
+      </div>
+
+      <div class="player-dock">
+        <div class="action-button-row">
+          <button class="btn-game-action btn-game-tool" onclick="App.sortHandByValue()">🔢 VALORE</button>
+          <button class="btn-game-action btn-game-tool" onclick="App.sortHandBySuit()">🎨 SEME</button>
+          <button class="btn-game-action btn-game-tool" onclick="App.clearSelection()">DESELEZIONA</button>
+          <button id="btn-action-meld" class="btn-game-action btn-game-meld btn-lock" onclick="App.playCombination()">✨ CALA</button>
+          <button id="btn-action-discard" class="btn-game-action btn-game-discard btn-lock" onclick="App.discardCard()">SCARTA</button>
+        </div>
+
+        <div class="hand-cards-rack" id="player-cards-rack"></div>
+      </div>
+
+    </div>
+
+    <!-- OVERLAY MONETA 3D -->
+    <div id="in-game-coin-overlay">
+      <div class="coin-perspective-box">
+        <div class="coin-mesh" id="coin-in-game-mesh">
+          <div class="coin-face coin-face-player">
+            <span style="font-size:1.8rem;">👤</span>
+            <span>TU</span>
+          </div>
+          <div class="coin-face coin-face-bot">
+            <span style="font-size:1.8rem;" id="coin-opp-icon">🤖</span>
+            <span id="coin-opp-text">AVVERSARIO</span>
+          </div>
+        </div>
+      </div>
+      <h2 id="coin-dynamic-status" style="font-family:'Space Grotesk', sans-serif; font-size:1.3rem; color:var(--gold-light); text-align:center;">
+        Sorteggio in corso...
+      </h2>
+    </div>
+  </div>
+
+  <!-- MODAL SPOSTAMENTO MATTINO -->
+  <div id="modal-mattino-shift">
+    <div class="wild-pos-box">
+      <h3 style="color:var(--gold-light); font-family:'Space Grotesk', sans-serif; font-size:1.2rem;">Hai sostituito il Mattino con la carta reale!</h3>
+      <p style="font-size:0.85rem; color:#cbd5e1; margin-top:6px;">Dove vuoi spostare il Mattino all'interno della combinazione?</p>
+      <div class="wild-choice-row">
+        <button class="btn-pos-choice" onclick="App.confirmMattinoShift('start')">⬅️ A Sinistra (Inizio)</button>
+        <button class="btn-pos-choice" onclick="App.confirmMattinoShift('end')">A Destra (Fine) ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FINE MANO -->
+  <div id="modal-round-end" class="modal-overlay">
+    <div class="modal-box">
+      <h2 id="round-title" style="color:var(--gold-light); font-size:1.6rem; font-family:'Tenor Sans', sans-serif;">MANO CONCLUSA!</h2>
+      <p id="round-desc" style="font-size:0.85rem; color:#a7f3d0; margin: 4px 0 10px;"></p>
+
+      <table class="score-grid">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Dettaglio Mano</th>
+            <th style="text-align:right;">Tu</th>
+            <th style="text-align:right;" id="lbl-round-opp-name">Avversario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align:left;">Punti Calati a Tavolo</td>
+            <td id="rnd-p-melds" style="text-align:right;">0</td>
+            <td id="rnd-b-melds" style="text-align:right;">0</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;">Bonus Chiusura (+300)</td>
+            <td id="rnd-p-bonus" style="text-align:right; color:#4ade80; font-weight:800;">0</td>
+            <td id="rnd-b-bonus" style="text-align:right; color:#4ade80; font-weight:800;">0</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;">Penalità Carte in Mano</td>
+            <td id="rnd-p-hand-pen" style="text-align:right; color:#f87171; font-weight:800;">0</td>
+            <td id="rnd-b-hand-pen" style="text-align:right; color:#f87171; font-weight:800;">0</td>
+          </tr>
+          <tr style="border-top:1.5px solid rgba(212,175,55,0.4); font-weight:800;">
+            <td style="text-align:left; color:#fbbf24;">Punti Guadagnati Mano</td>
+            <td id="rnd-p-net" style="text-align:right; color:#fbbf24;">0</td>
+            <td id="rnd-b-net" style="text-align:right; color:#fbbf24;">0</td>
+          </tr>
+          <tr style="border-top:2px solid var(--gold-primary); font-weight:900; font-size:1.1rem;">
+            <td style="text-align:left; color:var(--gold-light);">PUNTEGGIO TOTALE MATCH</td>
+            <td id="rnd-p-total-match" style="text-align:right; color:var(--gold-light);">0</td>
+            <td id="rnd-b-total-match" style="text-align:right; color:var(--gold-light);">0</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="elo-update-container" style="display:none; margin:10px 0; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:10px; padding:8px;">
+        <span style="font-family:'Space Grotesk',sans-serif; font-size:0.85rem; font-weight:800; color:#38bdf8;" id="elo-delta-text">+25 Ranking</span>
+      </div>
+
+      <button class="apple-cta-play" id="btn-next-round-cta" style="width:100%; margin-top:6px;" onclick="App.handleNextRoundOrEnd()">Prossima Mano ➡️</button>
+    </div>
+  </div>
+
+  <!-- MODAL TUTORIAL -->
+  <div id="modal-rules" class="modal-overlay" onclick="App.closeTutorial(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <h2 style="color:var(--gold-light); font-size:1.3rem; font-family:'Tenor Sans', sans-serif; margin-bottom:8px;">Regole del Pinnacolo Modenese</h2>
+      <div style="text-align:left; font-size:0.8rem; line-height:1.5; max-height:60vh; overflow-y:auto; padding-right:4px;">
+        <p>• <strong>Attacco Automatico con Drag & Drop:</strong> Trascina una carta dalla tua mano su una combinazione calata e verrà inserita automaticamente al posto giusto nella sequenza.</p>
+        <p>• <strong>Nuove Calate & Attacco Carte:</strong> Una volta calata una combinazione nuova, non puoi attaccare ulteriori carte su di essa nello stesso turno (dovrai attendere il turno successivo).</p>
+        <p>• <strong>Ordine di Selezione:</strong> Il Jolly o Mattino viene inserito nella calata esattamente nell'ordine in cui lo tocchi.</p>
+        <p>• <strong>Ponte 3-A-K-Q nei Neri:</strong> Nei semi neri (Picche/Fiori) il 2 è Mattino, quindi 3-A-K-Q è una scala continua valida.</p>
+        <p>• <strong>Spostamento del Mattino:</strong> Se cali la carta reale al posto di un Mattino presente a terra, puoi decidere se spostarlo all'inizio o alla fine.</p>
+        <p>• <strong>Furto del Jolly:</strong> Se metti la carta reale al posto di un Jolly a terra, il Jolly viene rubato nella tua mano e va giocato nello stesso turno.</p>
+        <p>• <strong>Bonus Chiusura:</strong> Chi finisce tutte le carte in mano ottiene <strong>+300 PUNTI</strong>.</p>
+        <p>• <strong>Penalità Carte in Mano:</strong> Chi non chiude paga i punti rimasti in mano.</p>
+        <p>• <strong>Scale Pure (x2):</strong> Raddoppiano i punti da 6+ carte SOLO se non contengono Jolly o Mattini.</p>
+      </div>
+      <button class="apple-cta-play" style="width:100%; margin-top:12px; padding:10px;" onclick="App.closeTutorial()">Ho Capito</button>
+    </div>
+  </div>
+
+  <script>
+    const SoundEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      },
+      playSlide() {
+        if (!this.ctx) return;
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(420, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.08);
+        g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        o.connect(g); g.connect(this.ctx.destination);
+        o.start(); o.stop(this.ctx.currentTime + 0.08);
+      },
+      playCoin3s() {
+        if (!this.ctx) return;
+        for (let i = 0; i < 5; i++) {
+          const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(900 + i * 160, this.ctx.currentTime + i * 0.55);
+          o.frequency.exponentialRampToValueAtTime(1250 + i * 70, this.ctx.currentTime + i * 0.55 + 0.22);
+          g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+          o.connect(g); g.connect(this.ctx.destination);
+          o.start(this.ctx.currentTime + i * 0.55);
+          o.stop(this.ctx.currentTime + i * 0.55 + 0.22);
+        }
+      },
+      playMeld() {
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.06);
+          g.gain.setValueAtTime(0.18, this.ctx.currentTime + i * 0.06);
+          g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.06 + 0.22);
+          o.connect(g); g.connect(this.ctx.destination);
+          o.start(this.ctx.currentTime + i * 0.06);
+          o.stop(this.ctx.currentTime + i * 0.06 + 0.22);
+        });
+      },
+      playEnd() {
+        if (!this.ctx) return;
+        [440, 554.37, 659.25, 880].forEach((f, i) => {
+          const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(f, this.ctx.currentTime + i * 0.08);
+          g.gain.setValueAtTime(0.25, this.ctx.currentTime + i * 0.08);
+          g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.08 + 0.35);
+          o.connect(g); g.connect(this.ctx.destination);
+          o.start(this.ctx.currentTime + i * 0.08);
+          o.stop(this.ctx.currentTime + i * 0.08 + 0.35);
+        });
+      }
+    };
+
+    const SUITS = {
+      HEARTS: { symbol: '♥', isRed: true, order: 1 },
+      DIAMONDS: { symbol: '♦', isRed: true, order: 2 },
+      CLUBS: { symbol: '♣', isRed: false, order: 3 },
+      SPADES: { symbol: '♠', isRed: false, order: 4 }
+    };
+
+    class Card {
+      constructor(id, val, suitKey, isJoker = false) {
+        this.id = id;
+        this.val = val;
+        this.suitKey = suitKey;
+        this.suit = suitKey ? SUITS[suitKey] : { symbol: '★', isRed: true, order: 0 };
+        this.isJoker = isJoker;
+        this.isMattino = (val === 2 && (suitKey === 'SPADES' || suitKey === 'CLUBS'));
+        this.points = this.calcPts();
+      }
+      calcPts() {
+        if (this.isJoker) return 30;
+        if (this.isMattino) return 20;
+        if (this.val === 1) return 15;
+        if (this.val >= 7 && this.val <= 13) return 10;
+        return 5;
+      }
+      getLabel() {
+        if (this.isJoker) return 'JK';
+        if (this.val === 1) return 'A';
+        if (this.val === 11) return 'J';
+        if (this.val === 12) return 'Q';
+        if (this.val === 13) return 'K';
+        return this.val.toString();
+      }
+    }
+
+    const App = {
+      socket: null,
+      isOnline: false,
+      roomId: null,
+      playerRole: null,
+
+      deck: [],
+      discardPile: [],
+      playerHand: [],
+      botHand: [],
+      playerMelds: [],
+      botMelds: [],
+      selectedIdsOrdered: [],
+      currentTurn: 'player',
+      hasDrawn: false,
+      obligatedId: null,
+
+      playerMatchScore: 0,
+      botMatchScore: 0,
+      currentRound: 1,
+
+      playMode: 'bot',
+      targetScore: 1500,
+      selectedFormat: '1v1_19',
+      selectedDiff: 'hard',
+
+      playerScoreRating: 1250,
+      opponentOnlineData: null,
+
+      pendingMattinoShift: null,
+      draggedCardId: null,
+
+      init() {
+        window.addEventListener('click', () => SoundEngine.init(), { once: true });
+        window.addEventListener('touchstart', () => SoundEngine.init(), { once: true });
+        this.updateProfileDisplay();
+        this.setupSocketEvents();
+      },
+
+      setupSocketEvents() {
+        try {
+          this.socket = io();
+        } catch (e) {
+          console.warn("Socket.io non collegato o eseguito in locale senza server.", e);
+          return;
+        }
+
+        this.socket.on('mm_waiting', () => {
+          document.getElementById('mm-status-text').innerText = "In attesa di un altro giocatore online...";
+          document.getElementById('mm-opponent-preview').innerHTML = `<span>⏳</span><span>Stanza aperta, attendo avversario...</span>`;
+        });
+
+        this.socket.on('game_started', (data) => {
+          this.roomId = data.roomId;
+          this.playerRole = data.role;
+          this.opponentOnlineData = data.opponentData;
+          this.isOnline = true;
+
+          // Carica la mano reale distribuita dal server
+          this.playerHand = data.yourHand.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+          this.botHand = new Array(data.opponentHandCount).fill(null);
+          this.discardPile = data.discardPile.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+          this.deck = new Array(data.deckCount).fill(null);
+
+          this.playerMelds = [];
+          this.botMelds = [];
+          this.selectedIdsOrdered = [];
+          this.hasDrawn = false;
+          this.obligatedId = null;
+
+          document.getElementById('screen-matchmaking').style.display = 'none';
+          document.getElementById('opp-display-name').innerText = this.opponentOnlineData.name;
+          document.getElementById('bot-icon-state').innerText = this.opponentOnlineData.avatar;
+          document.getElementById('label-melds-opp').innerText = `Calate ${this.opponentOnlineData.name}`;
+
+          document.getElementById('screen-menu').classList.remove('active');
+          document.getElementById('screen-game').classList.add('active');
+
+          this.currentTurn = data.yourTurn ? 'player' : 'bot';
+          this.render();
+
+          alert(data.yourTurn ? "👉 Partita Iniziata! Tocca a TE!" : `⏳ Partita Iniziata! Tocca a ${this.opponentOnlineData.name}`);
+        });
+
+        this.socket.on('draw_deck_result', (data) => {
+          this.playerHand.push(new Card(data.card.id, data.card.val, data.card.suitKey, data.card.isJoker));
+          this.deck = new Array(data.deckCount).fill(null);
+          this.hasDrawn = true;
+          this.render();
+        });
+
+        this.socket.on('opponent_drew_deck', (data) => {
+          this.deck = new Array(data.deckCount).fill(null);
+          this.botHand.push(null);
+          SoundEngine.playSlide();
+          this.render();
+        });
+
+        this.socket.on('draw_discard_result', (data) => {
+          const added = data.pickedCards.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+          this.playerHand.push(...added);
+          this.discardPile = data.discardPile.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+          this.hasDrawn = true;
+          this.obligatedId = added[0].id;
+          this.render();
+        });
+
+        this.socket.on('opponent_drew_discard', (data) => {
+          this.discardPile = data.discardPile.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+          for (let i = 0; i < data.pickedCount; i++) this.botHand.push(null);
+          SoundEngine.playSlide();
+          this.render();
+        });
+
+        this.socket.on('opponent_played_meld', (data) => {
+          const newMeldCards = data.meld.cards.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+          this.botMelds.push({
+            cards: newMeldCards,
+            score: data.meld.score,
+            isDouble: data.meld.isDouble,
+            createdThisTurn: false
+          });
+          this.botHand = new Array(data.oppHandCount).fill(null);
+          SoundEngine.playMeld();
+          this.render();
+        });
+
+        this.socket.on('opponent_attached_card', (data) => {
+          const targetArray = data.isPlayerTarget ? this.playerMelds : this.botMelds;
+          if (targetArray[data.meldIndex]) {
+            targetArray[data.meldIndex].cards = data.updatedMeld.cards.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+            targetArray[data.meldIndex].score = data.updatedMeld.score;
+            targetArray[data.meldIndex].isDouble = data.updatedMeld.isDouble;
+          }
+          this.botHand = new Array(data.oppHandCount).fill(null);
+          SoundEngine.playMeld();
+          this.render();
+        });
+
+        this.socket.on('opponent_discarded', (data) => {
+          this.discardPile = data.discardPile.map(c => new Card(c.id, c.val, c.suitKey, c.isJoker));
+          this.botHand = new Array(data.oppHandCount).fill(null);
+          SoundEngine.playSlide();
+          this.render();
+        });
+
+        this.socket.on('set_turn', (myTurnNow) => {
+          this.currentTurn = myTurnNow ? 'player' : 'bot';
+          this.hasDrawn = false;
+          this.playerMelds.forEach(m => m.createdThisTurn = false);
+          this.render();
+        });
+
+        this.socket.on('round_over_winner', (data) => {
+          this.endRound('bot');
+        });
+
+        this.socket.on('opponent_disconnected', (msg) => {
+          alert(msg);
+          this.quitToMenu();
+        });
+      },
+
+      updateProfileDisplay() {
+        let rankName = "Principiante Modenese";
+        if (this.playerScoreRating >= 1400) rankName = "Veterano delle Bocce";
+        if (this.playerScoreRating >= 1600) rankName = "Gran Maestro di Ghirlandina";
+        else if (this.playerScoreRating >= 1200) rankName = "Maestro Modenese";
+
+        document.getElementById('menu-player-score-tag').innerText = `${this.playerScoreRating}`;
+        document.getElementById('menu-player-rank').innerText = rankName;
+      },
+
+      setPlayMode(mode) {
+        this.playMode = mode;
+        const cardBot = document.getElementById('card-mode-bot');
+        const cardOnline = document.getElementById('card-mode-online');
+        const botTray = document.getElementById('bot-difficulty-tray');
+        const cta = document.getElementById('btn-start-game-cta');
+
+        if (mode === 'online') {
+          cardBot.classList.remove('active');
+          cardOnline.classList.add('active');
+          botTray.style.display = 'none';
+          cta.innerText = "Cerca Partita Online 🌐";
+        } else {
+          cardOnline.classList.remove('active');
+          cardBot.classList.add('active');
+          botTray.style.display = 'flex';
+          cta.innerText = "Avvia Partita 🪙";
+        }
+      },
+
+      setPointsTarget(val, el) {
+        this.targetScore = val;
+        el.parentElement.querySelectorAll('.apple-segment-item').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+      },
+
+      selectFormat(fmt, el) {
+        this.selectedFormat = fmt;
+        el.parentElement.querySelectorAll('.apple-segment-item').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+      },
+
+      selectDiff(diff, el) {
+        this.selectedDiff = diff;
+        el.parentElement.querySelectorAll('.apple-segment-item').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+      },
+
+      handleStartGameClick() {
+        if (this.playMode === 'online') {
+          this.isOnline = true;
+          document.getElementById('screen-matchmaking').style.display = 'flex';
+          if (this.socket) {
+            this.socket.emit('join_matchmaking', {
+              name: "Tu (Giocatore)",
+              score: this.playerScoreRating
+            });
+          }
+        } else {
+          this.isOnline = false;
+          this.playerMatchScore = 0;
+          this.botMatchScore = 0;
+          this.currentRound = 1;
+          this.launchGameWith3sCoinToss();
+        }
+      },
+
+      cancelMatchmaking() {
+        if (this.socket) this.socket.emit('cancel_matchmaking');
+        document.getElementById('screen-matchmaking').style.display = 'none';
+      },
+
+      buildDeck() {
+        const d = [];
+        let idCount = 1;
+        for (let p = 1; p <= 2; p++) {
+          for (const sKey of ['HEARTS', 'DIAMONDS', 'CLUBS', 'SPADES']) {
+            for (let v = 1; v <= 13; v++) {
+              d.push(new Card(`c-${idCount++}`, v, sKey, false));
+            }
+          }
+          d.push(new Card(`j-${idCount++}`, 0, null, true));
+          d.push(new Card(`j-${idCount++}`, 0, null, true));
+        }
+        for (let i = d.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [d[i], d[j]] = [d[j], d[i]];
+        }
+        return d;
+      },
+
+      launchGameWith3sCoinToss() {
+        SoundEngine.init();
+        const handSize = (this.selectedFormat === '1v1_33') ? 33 : 19;
+        this.deck = this.buildDeck();
+        this.playerHand = this.deck.splice(0, handSize);
+        this.botHand = this.deck.splice(0, handSize);
+        this.discardPile = [this.deck.pop()];
+
+        this.playerMelds = [];
+        this.botMelds = [];
+        this.selectedIdsOrdered = [];
+        this.hasDrawn = false;
+        this.obligatedId = null;
+
+        document.getElementById('opp-display-name').innerText = "Bot";
+        document.getElementById('bot-icon-state').innerText = "🤖";
+        document.getElementById('label-melds-opp').innerText = "Calate Avversario";
+
+        document.getElementById('screen-menu').classList.remove('active');
+        document.getElementById('screen-game').classList.add('active');
+        this.render();
+
+        const coinOverlay = document.getElementById('in-game-coin-overlay');
+        const coinMesh = document.getElementById('coin-in-game-mesh');
+        const statusText = document.getElementById('coin-dynamic-status');
+
+        coinOverlay.style.display = 'flex';
+        coinMesh.className = 'coin-mesh';
+
+        const starter = Math.random() < 0.5 ? 'player' : 'bot';
+        this.currentTurn = starter;
+
+        SoundEngine.playCoin3s();
+
+        void coinMesh.offsetWidth;
+        if (starter === 'player') coinMesh.classList.add('animate-flip-player');
+        else coinMesh.classList.add('animate-flip-bot');
+
+        setTimeout(() => {
+          coinOverlay.style.display = 'none';
+          this.render();
+          if (this.currentTurn === 'bot') {
+            setTimeout(() => this.runBotTurn(), 600);
+          }
+        }, 3200);
+      },
+
+      quitToMenu() {
+        this.isOnline = false;
+        document.getElementById('screen-game').classList.remove('active');
+        document.getElementById('modal-round-end').classList.remove('open');
+        document.getElementById('screen-menu').classList.add('active');
+        this.updateProfileDisplay();
+      },
+
+      openTutorial() { document.getElementById('modal-rules').classList.add('open'); },
+      closeTutorial() { document.getElementById('modal-rules').classList.remove('open'); },
+
+      drawFromDeck() {
+        if (this.currentTurn !== 'player' || this.hasDrawn) return;
+
+        if (this.isOnline) {
+          SoundEngine.playSlide();
+          this.socket.emit('action_draw_deck', { roomId: this.roomId });
+          return;
+        }
+
+        if (this.deck.length === 0) {
+          this.endRound('deck_empty');
+          return;
+        }
+
+        SoundEngine.playSlide();
+        this.playerHand.push(this.deck.pop());
+        this.hasDrawn = true;
+        this.render();
+      },
+
+      drawFromDiscard(idx) {
+        if (this.currentTurn !== 'player' || this.hasDrawn) return;
+
+        if (this.isOnline) {
+          SoundEngine.playSlide();
+          this.socket.emit('action_draw_discard', { roomId: this.roomId, idx });
+          return;
+        }
+
+        SoundEngine.playSlide();
+        const picked = this.discardPile.splice(idx);
+        this.playerHand.push(...picked);
+        this.hasDrawn = true;
+        this.obligatedId = picked[0].id;
+        this.render();
+      },
+
+      getSuitTrack(suitKey) {
+        if (suitKey === 'SPADES' || suitKey === 'CLUBS') {
+          return [3, 1, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4];
+        }
+        return [3, 2, 1, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4];
+      },
+
+      validateUserMeld(cards) {
+        if (cards.length < 3) return { valid: false, msg: "Servono almeno 3 carte." };
+        const wilds = cards.filter(c => c.isJoker || c.isMattino);
+        const nats = cards.filter(c => !c.isJoker && !c.isMattino);
+
+        let isRankGroup = false;
+        if (nats.length > 0) {
+          const targetVal = nats[0].val;
+          const sameRank = nats.every(c => c.val === targetVal);
+          const suits = new Set(nats.map(c => c.suitKey));
+          const allDifferentSuits = (suits.size === nats.length);
+
+          if (sameRank && allDifferentSuits && nats.length <= 4) isRankGroup = true;
+        } else {
+          isRankGroup = true;
+        }
+
+        let isSequence = false;
+        if (!isRankGroup && nats.length > 0) {
+          const targetSuit = nats[0].suitKey;
+          const allSameSuit = nats.every(c => c.suitKey === targetSuit);
+
+          if (allSameSuit) {
+            const track = this.getSuitTrack(targetSuit);
+            const doubledTrack = [...track, ...track, ...track];
+
+            const checkTrackContiguity = (direction = 1) => {
+              const firstNatIdxInCards = cards.findIndex(c => !c.isJoker && !c.isMattino);
+              const firstNatVal = cards[firstNatIdxInCards].val;
+              const startTrackIndex = track.indexOf(firstNatVal) + track.length;
+
+              for (let i = 0; i < cards.length; i++) {
+                const expectedTrackPos = startTrackIndex + (i - firstNatIdxInCards) * direction;
+                const expectedVal = doubledTrack[expectedTrackPos];
+
+                if (!cards[i].isJoker && !cards[i].isMattino) {
+                  if (cards[i].val !== expectedVal) return false;
+                }
+              }
+              return true;
+            };
+
+            if (checkTrackContiguity(1) || checkTrackContiguity(-1)) {
+              isSequence = true;
+            }
+          }
+        }
+
+        if (!isRankGroup && !isSequence) {
+          return {
+            valid: false,
+            msg: "Combinazione non valida! I tris devono avere semi diversi e le scale devono essere sequenze continue!"
+          };
+        }
+
+        let basePts = cards.reduce((s, c) => s + c.points, 0);
+        let isDouble = false;
+
+        if (cards.length === 4 && wilds.length === 0 && isRankGroup) isDouble = true;
+        if (isSequence && cards.length >= 6 && wilds.length === 0) isDouble = true;
+
+        return {
+          valid: true,
+          score: isDouble ? basePts * 2 : basePts,
+          isDouble,
+          orderedCards: cards
+        };
+      },
+
+      playCombination() {
+        if (this.currentTurn !== 'player' || !this.hasDrawn) return;
+        if (this.selectedIdsOrdered.length < 3) return;
+
+        const orderedCards = this.selectedIdsOrdered
+          .map(id => this.playerHand.find(c => c.id === id))
+          .filter(Boolean);
+
+        const check = this.validateUserMeld(orderedCards);
+        if (!check.valid) {
+          alert(check.msg);
+          return;
+        }
+
+        if (this.obligatedId && orderedCards.some(c => c.id === this.obligatedId)) {
+          this.obligatedId = null;
+        }
+
+        SoundEngine.playMeld();
+        const cardIds = new Set(orderedCards.map(c => c.id));
+        this.playerHand = this.playerHand.filter(c => !cardIds.has(c.id));
+        
+        const newMeld = {
+          cards: orderedCards,
+          score: check.score,
+          isDouble: check.isDouble,
+          createdThisTurn: true
+        };
+
+        this.playerMelds.push(newMeld);
+        this.selectedIdsOrdered = [];
+
+        // Notifica Socket Online
+        if (this.isOnline) {
+          this.socket.emit('action_play_meld', {
+            roomId: this.roomId,
+            meld: newMeld,
+            remainingCards: this.playerHand.length
+          });
+        }
+
+        if (this.playerHand.length === 0) {
+          this.endRound('player');
+          return;
+        }
+        this.render();
+      },
+
+      attachCardToMeldDirectly(cardToAttach, cardIdx, meldIndex, isPlayerTarget = true) {
+        const targetMeldArray = isPlayerTarget ? this.playerMelds : this.botMelds;
+        const targetMeld = targetMeldArray[meldIndex];
+
+        if (targetMeld.createdThisTurn) {
+          alert("⚠️ Non puoi attaccare carte su una combinazione calata in questo stesso turno!");
+          return;
+        }
+
+        // Furto del Jolly
+        const jokerIdx = targetMeld.cards.findIndex(c => c.isJoker);
+        if (jokerIdx !== -1) {
+          const testMeldWithoutJoker = [...targetMeld.cards];
+          const stolenJoker = testMeldWithoutJoker.splice(jokerIdx, 1, cardToAttach)[0];
+          const res = this.validateUserMeld(testMeldWithoutJoker);
+
+          if (res.valid) {
+            SoundEngine.playMeld();
+            this.playerHand.splice(cardIdx, 1);
+            targetMeld.cards = testMeldWithoutJoker;
+            targetMeld.score = res.score;
+            targetMeld.isDouble = res.isDouble;
+
+            this.playerHand.push(stolenJoker);
+            this.obligatedId = stolenJoker.id;
+            this.selectedIdsOrdered = [];
+
+            if (this.isOnline) {
+              this.socket.emit('action_attach_card', {
+                roomId: this.roomId,
+                meldIndex,
+                isOpponentTarget: !isPlayerTarget,
+                updatedMeld: targetMeld,
+                remainingCards: this.playerHand.length
+              });
+            }
+
+            alert("🃏 HAI RUBATO IL JOLLY! Devi giocarlo in una calata in questo turno!");
+            this.render();
+            return;
+          }
+        }
+
+        // Spostamento Mattino
+        const mattinoIdx = targetMeld.cards.findIndex(c => c.isMattino);
+        if (mattinoIdx !== -1) {
+          const testMeldWithoutMattino = [...targetMeld.cards];
+          const displacedMattino = testMeldWithoutMattino.splice(mattinoIdx, 1, cardToAttach)[0];
+          const res = this.validateUserMeld(testMeldWithoutMattino);
+
+          if (res.valid) {
+            this.pendingMattinoShift = {
+              cardIdx,
+              targetMeld,
+              cardToAttach,
+              displacedMattino,
+              meldWithoutMattino: testMeldWithoutMattino,
+              meldIndex,
+              isPlayerTarget
+            };
+            document.getElementById('modal-mattino-shift').style.display = 'flex';
+            return;
+          }
+        }
+
+        // Attacco normale
+        let candidateOrderings = [
+          [...targetMeld.cards, cardToAttach],
+          [cardToAttach, ...targetMeld.cards]
+        ];
+
+        let validResult = null;
+        let bestCards = null;
+
+        for (const testCards of candidateOrderings) {
+          const res = this.validateUserMeld(testCards);
+          if (res.valid) {
+            validResult = res;
+            bestCards = testCards;
+            break;
+          }
+        }
+
+        if (validResult) {
+          SoundEngine.playMeld();
+          this.playerHand.splice(cardIdx, 1);
+          targetMeld.cards = bestCards;
+          targetMeld.score = validResult.score;
+          targetMeld.isDouble = validResult.isDouble;
+
+          if (this.obligatedId === cardToAttach.id) this.obligatedId = null;
+          this.selectedIdsOrdered = [];
+
+          if (this.isOnline) {
+            this.socket.emit('action_attach_card', {
+              roomId: this.roomId,
+              meldIndex,
+              isOpponentTarget: !isPlayerTarget,
+              updatedMeld: targetMeld,
+              remainingCards: this.playerHand.length
+            });
+          }
+
+          if (this.playerHand.length === 0) {
+            this.endRound('player');
+            return;
+          }
+          this.render();
+        } else {
+          alert("Questa carta non si lega a questa combinazione!");
+        }
+      },
+
+      attachToMeld(meldIndex, isPlayerTarget = true) {
+        if (this.currentTurn !== 'player' || !this.hasDrawn) return;
+        if (this.selectedIdsOrdered.length !== 1) {
+          alert("Seleziona 1 carta dalla mano e tocca la calata su cui attaccarla.");
+          return;
+        }
+
+        const cardId = this.selectedIdsOrdered[0];
+        const cardIdx = this.playerHand.findIndex(c => c.id === cardId);
+        if (cardIdx === -1) return;
+
+        this.attachCardToMeldDirectly(this.playerHand[cardIdx], cardIdx, meldIndex, isPlayerTarget);
+      },
+
+      confirmMattinoShift(pos) {
+        document.getElementById('modal-mattino-shift').style.display = 'none';
+        if (!this.pendingMattinoShift) return;
+
+        const { cardIdx, targetMeld, displacedMattino, meldWithoutMattino, meldIndex, isPlayerTarget } = this.pendingMattinoShift;
+        
+        let newCards = [...meldWithoutMattino];
+        if (pos === 'start') newCards.unshift(displacedMattino);
+        else newCards.push(displacedMattino);
+
+        const res = this.validateUserMeld(newCards);
+
+        SoundEngine.playMeld();
+        this.playerHand.splice(cardIdx, 1);
+        targetMeld.cards = newCards;
+        targetMeld.score = res.score;
+        targetMeld.isDouble = res.isDouble;
+
+        this.selectedIdsOrdered = [];
+
+        if (this.isOnline) {
+          this.socket.emit('action_attach_card', {
+            roomId: this.roomId,
+            meldIndex,
+            isOpponentTarget: !isPlayerTarget,
+            updatedMeld: targetMeld,
+            remainingCards: this.playerHand.length
+          });
+        }
+
+        this.pendingMattinoShift = null;
+
+        if (this.playerHand.length === 0) {
+          this.endRound('player');
+          return;
+        }
+        this.render();
+      },
+
+      discardCard() {
+        if (this.currentTurn !== 'player' || !this.hasDrawn) return;
+        if (this.obligatedId) {
+          alert("Obbligo attivo: devi prima calare la carta raccolta dagli scarti o il Jolly rubato!");
+          return;
+        }
+        if (this.selectedIdsOrdered.length !== 1) {
+          alert("Seleziona esattamente 1 carta da scartare.");
+          return;
+        }
+
+        const discardId = this.selectedIdsOrdered[0];
+        const cardIndex = this.playerHand.findIndex(c => c.id === discardId);
+        const card = this.playerHand.splice(cardIndex, 1)[0];
+
+        SoundEngine.playSlide();
+        this.discardPile.push(card);
+        this.selectedIdsOrdered = [];
+        this.hasDrawn = false;
+
+        this.playerMelds.forEach(m => m.createdThisTurn = false);
+
+        if (this.isOnline) {
+          this.socket.emit('action_discard', {
+            roomId: this.roomId,
+            card,
+            remainingCards: this.playerHand.length
+          });
+
+          if (this.playerHand.length === 0) {
+            this.socket.emit('action_round_closed', {
+              roomId: this.roomId,
+              winnerRole: this.playerRole,
+              hand: []
+            });
+            this.endRound('player');
+            return;
+          }
+          this.currentTurn = 'bot';
+          this.render();
+          return;
+        }
+
+        if (this.playerHand.length === 0) {
+          this.endRound('player');
+          return;
+        }
+
+        this.currentTurn = 'bot';
+        this.render();
+        setTimeout(() => this.runBotTurn(), 600);
+      },
+
+      runBotTurn() {
+        if (this.isOnline) return;
+
+        const botBox = document.getElementById('bot-status-box');
+        const botIcon = document.getElementById('bot-icon-state');
+        botBox.classList.add('thinking');
+        botIcon.innerText = "💭";
+
+        setTimeout(() => {
+          if (this.deck.length > 0) this.botHand.push(this.deck.pop());
+          else if (this.discardPile.length > 0) this.botHand.push(this.discardPile.pop());
+          else {
+            this.endRound('deck_empty');
+            return;
+          }
+
+          SoundEngine.playSlide();
+          this.render();
+
+          setTimeout(() => {
+            this.botPerformSmartMeldsAndAttacks();
+
+            if (this.botHand.length === 0) {
+              botBox.classList.remove('thinking');
+              botIcon.innerText = "🤖";
+              this.endRound('bot');
+              return;
+            }
+
+            setTimeout(() => {
+              this.botPerformSmartDiscard();
+              botBox.classList.remove('thinking');
+              botIcon.innerText = "🤖";
+
+              this.botMelds.forEach(m => m.createdThisTurn = false);
+
+              if (this.botHand.length === 0) {
+                this.endRound('bot');
+                return;
+              }
+
+              this.currentTurn = 'player';
+              this.hasDrawn = false;
+              this.render();
+            }, 700);
+
+          }, 800);
+
+        }, 900);
+      },
+
+      findBestBotMelds(hand) {
+        const results = [];
+        const wilds = hand.filter(c => c && (c.isJoker || c.isMattino));
+        
+        for (const sKey in SUITS) {
+          const track = this.getSuitTrack(sKey);
+          const suitNats = hand.filter(c => c && !c.isJoker && !c.isMattino && c.suitKey === sKey);
+          
+          if (suitNats.length >= 2 || (suitNats.length >= 1 && wilds.length >= 2)) {
+            suitNats.sort((a,b) => track.indexOf(a.val) - track.indexOf(b.val));
+            
+            for (let i = 0; i < suitNats.length; i++) {
+              for (let len = 3; len <= Math.min(8, suitNats.length + wilds.length); len++) {
+                const candidate = [];
+                let currentTrackPos = track.indexOf(suitNats[i].val);
+                let usedWildCount = 0;
+                let validCandidate = true;
+
+                for (let k = 0; k < len; k++) {
+                  const targetVal = track[(currentTrackPos + k) % track.length];
+                  const natCard = suitNats.find(c => c.val === targetVal && !candidate.includes(c));
+                  if (natCard) {
+                    candidate.push(natCard);
+                  } else if (usedWildCount < wilds.length) {
+                    candidate.push(wilds[usedWildCount]);
+                    usedWildCount++;
+                  } else {
+                    validCandidate = false;
+                    break;
+                  }
+                }
+
+                if (validCandidate && candidate.length >= 3) {
+                  const check = this.validateUserMeld(candidate);
+                  if (check.valid) results.push(candidate);
+                }
+              }
+            }
+          }
+        }
+
+        const valMap = {};
+        hand.forEach(c => {
+          if (c && !c.isJoker && !c.isMattino) {
+            valMap[c.val] = valMap[c.val] || [];
+            if (!valMap[c.val].some(ex => ex.suitKey === c.suitKey)) {
+              valMap[c.val].push(c);
+            }
+          }
+        });
+
+        for (const v in valMap) {
+          if (valMap[v].length >= 3) {
+            const check = this.validateUserMeld(valMap[v]);
+            if (check.valid) results.push(valMap[v]);
+          } else if (valMap[v].length >= 2 && wilds.length >= 1) {
+            const groupWithWild = [...valMap[v], wilds[0]];
+            const check = this.validateUserMeld(groupWithWild);
+            if (check.valid) results.push(groupWithWild);
+          }
+        }
+
+        return results;
+      },
+
+      botPerformSmartMeldsAndAttacks() {
+        let foundMeld = true;
+        while (foundMeld) {
+          const candidates = this.findBestBotMelds(this.botHand);
+          if (candidates.length > 0) {
+            candidates.sort((a,b) => b.length - a.length);
+            const bestMeld = candidates[0];
+            const check = this.validateUserMeld(bestMeld);
+            
+            if (check.valid) {
+              this.botMelds.push({
+                cards: check.orderedCards,
+                score: check.score,
+                isDouble: check.isDouble,
+                createdThisTurn: true
+              });
+              const mIds = new Set(bestMeld.map(c => c.id));
+              this.botHand = this.botHand.filter(c => !mIds.has(c.id));
+              SoundEngine.playMeld();
+            } else {
+              foundMeld = false;
+            }
+          } else {
+            foundMeld = false;
+          }
+        }
+      },
+
+      botPerformSmartDiscard() {
+        if (this.botHand.length === 0) return;
+        this.botHand.sort((a,b) => a.points - b.points);
+        this.discardPile.push(this.botHand.shift());
+        SoundEngine.playSlide();
+      },
+
+      endRound(winner) {
+        SoundEngine.playEnd();
+
+        const pMeldPts = this.playerMelds.reduce((s, m) => s + m.score, 0);
+        const bMeldPts = this.botMelds.reduce((s, m) => s + m.score, 0);
+
+        const pBonus = (winner === 'player') ? 300 : 0;
+        const bBonus = (winner === 'bot') ? 300 : 0;
+
+        const pHandPenalty = this.playerHand.reduce((s, c) => s + c.points, 0);
+        const bHandPenalty = this.isOnline ? 0 : this.botHand.reduce((s, c) => s + (c ? c.points : 10), 0);
+
+        const pNetRound = pMeldPts + pBonus - pHandPenalty;
+        const bNetRound = bMeldPts + bBonus - bHandPenalty;
+
+        this.playerMatchScore += pNetRound;
+        this.botMatchScore += bNetRound;
+
+        const oppName = this.isOnline ? (this.opponentOnlineData ? this.opponentOnlineData.name : "Avversario Online") : "Bot";
+        document.getElementById('lbl-round-opp-name').innerText = oppName;
+
+        if (winner === 'player') {
+          document.getElementById('round-title').innerText = "🏆 HAI CHIUSO LA MANO!";
+          document.getElementById('round-desc').innerText = `Hai chiuso con +300 pt bonus!`;
+        } else if (winner === 'bot') {
+          document.getElementById('round-title').innerText = `🤖 ${oppName.toUpperCase()} HA CHIUSO!`;
+          document.getElementById('round-desc').innerText = `${oppName} chiude con +300 pt bonus!`;
+        } else {
+          document.getElementById('round-title').innerText = "⚖️ MAZZO ESAURITO";
+          document.getElementById('round-desc').innerText = "Conteggio netto calcolato sulle carte a terra.";
+        }
+
+        document.getElementById('rnd-p-melds').innerText = `${pMeldPts} pt`;
+        document.getElementById('rnd-b-melds').innerText = `${bMeldPts} pt`;
+        document.getElementById('rnd-p-bonus').innerText = `+${pBonus} pt`;
+        document.getElementById('rnd-b-bonus').innerText = `+${bBonus} pt`;
+        document.getElementById('rnd-p-hand-pen').innerText = `-${pHandPenalty} pt`;
+        document.getElementById('rnd-b-hand-pen').innerText = `-${bHandPenalty} pt`;
+        document.getElementById('rnd-p-net').innerText = `${pNetRound > 0 ? '+' : ''}${pNetRound} pt`;
+        document.getElementById('rnd-b-net').innerText = `${bNetRound > 0 ? '+' : ''}${bNetRound} pt`;
+        document.getElementById('rnd-p-total-match').innerText = `${this.playerMatchScore} pt`;
+        document.getElementById('rnd-b-total-match').innerText = `${this.botMatchScore} pt`;
+
+        document.getElementById('btn-next-round-cta').innerText = "Torna al Menu";
+        document.getElementById('modal-round-end').classList.add('open');
+      },
+
+      handleNextRoundOrEnd() {
+        document.getElementById('modal-round-end').classList.remove('open');
+        this.quitToMenu();
+      },
+
+      sortHandByValue() {
+        SoundEngine.playSlide();
+        this.playerHand.sort((a, b) => a.val - b.val);
+        this.render();
+      },
+
+      sortHandBySuit() {
+        SoundEngine.playSlide();
+        this.playerHand.sort((a, b) => (a.suit.order - b.suit.order || a.val - b.val));
+        this.render();
+      },
+
+      clearSelection() {
+        this.selectedIdsOrdered = [];
+        this.render();
+      },
+
+      toggleCard(id) {
+        const idx = this.selectedIdsOrdered.indexOf(id);
+        if (idx !== -1) this.selectedIdsOrdered.splice(idx, 1);
+        else this.selectedIdsOrdered.push(id);
+        this.render();
+      },
+
+      render() {
+        const badge = document.getElementById('hud-turn-badge');
+        const deckBtn = document.getElementById('deck-draw-btn');
+        const btnMeld = document.getElementById('btn-action-meld');
+        const btnDisc = document.getElementById('btn-action-discard');
+
+        if (this.currentTurn === 'player') {
+          if (!this.hasDrawn) {
+            badge.innerText = "👉 Pesca una carta";
+            badge.className = "turn-badge must-draw";
+            deckBtn.classList.add('animated-draw-prompt');
+            btnMeld.classList.add('btn-lock');
+            btnDisc.classList.add('btn-lock');
+          } else {
+            badge.innerText = "Tuo turno: Cala / Scarta";
+            badge.className = "turn-badge player-turn-active";
+            deckBtn.classList.remove('animated-draw-prompt');
+            btnMeld.classList.remove('btn-lock');
+            btnDisc.classList.remove('btn-lock');
+          }
+        } else {
+          const oppName = this.isOnline ? (this.opponentOnlineData ? this.opponentOnlineData.name : "Avversario") : "Bot";
+          badge.innerText = `Turno di ${oppName}...`;
+          badge.className = "turn-badge bot-turn";
+          deckBtn.classList.remove('animated-draw-prompt');
+          btnMeld.classList.add('btn-lock');
+          btnDisc.classList.add('btn-lock');
+        }
+
+        const bPts = this.botMelds.reduce((s, m) => s + m.score, 0);
+        const pPts = this.playerMelds.reduce((s, m) => s + m.score, 0);
+        document.getElementById('bot-card-count-hud').innerText = `${this.botHand.length}`;
+        document.getElementById('hud-bot-score-text').innerText = `Mano: ${bPts} | Match: ${this.botMatchScore}`;
+        document.getElementById('hud-player-details').innerText = `Mano: ${pPts} | Match: ${this.playerMatchScore}`;
+        document.getElementById('deck-left-count').innerText = `${this.deck.length}`;
+
+        const discardRack = document.getElementById('discard-stream-rack');
+        discardRack.innerHTML = '';
+        document.getElementById('discard-count-label').innerText = `${this.discardPile.length}`;
+        this.discardPile.forEach((card, idx) => {
+          const cardEl = this.createCardEl(card, false, true);
+          cardEl.classList.add('discard-item');
+          cardEl.onclick = () => this.drawFromDiscard(idx);
+          discardRack.appendChild(cardEl);
+        });
+        discardRack.scrollLeft = discardRack.scrollWidth;
+
+        this.renderMeldsRack('player-melds-rack', 'player-melds-count', this.playerMelds, true);
+        this.renderMeldsRack('bot-melds-rack', 'bot-melds-count', this.botMelds, false);
+
+        const handRack = document.getElementById('player-cards-rack');
+        handRack.innerHTML = '';
+        const totalCards = this.playerHand.length;
+
+        if (totalCards > 22) {
+          const laneTop = document.createElement('div');
+          laneTop.className = 'hand-scroll-lane';
+          const laneBottom = document.createElement('div');
+          laneBottom.className = 'hand-scroll-lane';
+
+          const half = Math.ceil(totalCards / 2);
+          this.playerHand.forEach((card, idx) => {
+            const isSelected = this.selectedIdsOrdered.includes(card.id);
+            const cardEl = this.createCardEl(card, isSelected, false);
+            this.setupCardDragEvents(cardEl, card);
+            cardEl.onclick = () => this.toggleCard(card.id);
+
+            if (idx < half) laneTop.appendChild(cardEl);
+            else laneBottom.appendChild(cardEl);
+          });
+
+          handRack.appendChild(laneTop);
+          handRack.appendChild(laneBottom);
+        } else {
+          const singleLane = document.createElement('div');
+          singleLane.className = 'hand-scroll-lane';
+
+          this.playerHand.forEach(card => {
+            const isSelected = this.selectedIdsOrdered.includes(card.id);
+            const cardEl = this.createCardEl(card, isSelected, false);
+            this.setupCardDragEvents(cardEl, card);
+            cardEl.onclick = () => this.toggleCard(card.id);
+            singleLane.appendChild(cardEl);
+          });
+
+          handRack.appendChild(singleLane);
+        }
+      },
+
+      setupCardDragEvents(cardEl, card) {
+        cardEl.draggable = true;
+        cardEl.ondragstart = (e) => {
+          this.draggedCardId = card.id;
+          cardEl.classList.add('is-dragging');
+          e.dataTransfer.setData('text/plain', card.id);
+        };
+        cardEl.ondragend = () => {
+          cardEl.classList.remove('is-dragging');
+          this.draggedCardId = null;
+          document.querySelectorAll('.meld-row').forEach(r => r.classList.remove('drag-over-target'));
+        };
+      },
+
+      renderMeldsRack(rackId, countId, melds, isPlayer) {
+        const rack = document.getElementById(rackId);
+        rack.innerHTML = '';
+        document.getElementById(countId).innerText = `${melds.length}`;
+
+        melds.forEach((m, idx) => {
+          const row = document.createElement('div');
+          row.className = `meld-row ${m.isDouble ? 'is-double' : ''}`;
+          let ptsLabel = `${m.score}p ${m.isDouble ? 'x2' : ''}`;
+
+          row.innerHTML = `<span class="meld-pts-tag">${ptsLabel}</span>`;
+          m.cards.forEach(c => row.appendChild(this.createCardEl(c, false, false, true)));
+
+          row.ondragover = (e) => { e.preventDefault(); row.classList.add('drag-over-target'); };
+          row.ondragleave = () => { row.classList.remove('drag-over-target'); };
+          row.ondrop = (e) => {
+            e.preventDefault();
+            row.classList.remove('drag-over-target');
+            if (this.draggedCardId) {
+              const cardIdx = this.playerHand.findIndex(c => c.id === this.draggedCardId);
+              if (cardIdx !== -1) {
+                this.attachCardToMeldDirectly(this.playerHand[cardIdx], cardIdx, idx, isPlayer);
+              }
+            }
+          };
+
+          row.onclick = () => this.attachToMeld(idx, isPlayer);
+          rack.appendChild(row);
+        });
+      },
+
+      createCardEl(card, isSelected = false, isInteractive = false, isMini = false) {
+        const el = document.createElement('div');
+        const col = card.suit.isRed ? 'red' : 'black';
+        const jk = card.isJoker ? 'is-joker' : '';
+        const mat = card.isMattino ? 'is-mattino' : '';
+        const mini = isMini ? 'mini' : '';
+        const sel = isSelected ? 'is-picked' : '';
+
+        el.className = `card-unit ${col} ${jk} ${mat} ${mini} ${sel}`;
+
+        let tag = '';
+        if (card.isJoker) tag = '<span class="tag-spec tag-joker">JK</span>';
+        if (card.isMattino) tag = '<span class="tag-spec tag-mattino">MAT</span>';
+
+        el.innerHTML = `
+          <div class="c-top">
+            <span class="c-val">${card.getLabel()}</span>
+            <span class="c-suit-s">${card.suit.symbol}</span>
+          </div>
+          <div class="c-center">${card.suit.symbol}</div>
+          <div class="c-bottom">${tag}<span>${card.points}p</span></div>
+        `;
+        return el;
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => App.init());
+  </script>
+</body>
+</html>
