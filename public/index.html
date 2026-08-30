@@ -184,6 +184,7 @@
       text-align: center;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      min-height: 100px;
     }
     .io-mode-card.active {
       border-color: #facc15;
@@ -765,7 +766,7 @@
             <span class="avatar-crest-icon" id="menu-crest-icon">🏰</span>
             <span class="avatar-crest-tag" id="menu-crest-name">Modena</span>
           </button>
-          <input type="text" id="input-username" class="io-text-input" placeholder="Tuo Nickname..." maxlength="14" oninput="App.onNameChange(this.value)" />
+          <input type="text" id="input-username" class="io-text-input" placeholder="Tuo Nickname..." maxlength="14" oninput="App.onNameInput(this.value)" onchange="App.onNameCommitted(this.value)" />
         </div>
 
         <div class="io-stats-bar" onclick="App.openAccountModal()">
@@ -1197,7 +1198,7 @@
 
     const App = {
       socket: null,
-      user: { name: "Giocatore", city: "modena", trophies: 0, wins: 0, losses: 0 },
+      user: { id: "", name: "Giocatore", city: "modena", trophies: 0, wins: 0, losses: 0 },
       isOnline: false,
       roomId: null,
       playerRole: null,
@@ -1208,6 +1209,8 @@
       playerMatchScore: 0,
       botMatchScore: 0,
       currentRound: 1,
+
+      nameDebounceTimer: null,
 
       deck: [],
       discardPile: [],
@@ -1243,9 +1246,17 @@
         const saved = localStorage.getItem('pinnacolo_account');
         if (saved) {
           this.user = JSON.parse(saved);
+          if (!this.user.id) this.user.id = 'usr_' + Math.random().toString(36).substr(2, 9);
           if (!this.user.city) this.user.city = "modena";
         } else {
-          this.user = { name: "Giocatore_" + Math.floor(Math.random()*900 + 100), city: "modena", trophies: 0, wins: 0, losses: 0 };
+          this.user = {
+            id: 'usr_' + Math.random().toString(36).substr(2, 9),
+            name: "Giocatore_" + Math.floor(Math.random()*900 + 100),
+            city: "modena",
+            trophies: 0,
+            wins: 0,
+            losses: 0
+          };
           this.saveAccount();
         }
         document.getElementById('input-username').value = this.user.name;
@@ -1256,9 +1267,17 @@
         localStorage.setItem('pinnacolo_account', JSON.stringify(this.user));
       },
 
-      onNameChange(val) {
+      onNameInput(val) {
+        // Debounce per evitare sync a raffica a ogni singola lettera
+        clearTimeout(this.nameDebounceTimer);
+        this.nameDebounceTimer = setTimeout(() => {
+          this.onNameCommitted(val);
+        }, 500);
+      },
+
+      onNameCommitted(val) {
         const clean = val.trim();
-        if (clean.length > 0) {
+        if (clean.length > 0 && clean !== this.user.name) {
           this.user.name = clean;
           this.saveAccount();
           if (this.socket) this.socket.emit('sync_profile', this.user);
@@ -1476,8 +1495,12 @@
         let basePts = cards.reduce((s, c) => s + c.points, 0);
         let isDouble = false;
 
-        if (isRankGroup && cards.length === 4 && wilds.length === 0) isDouble = true;
-        if (isSequence && cards.length >= 6 && wilds.length === 0) isDouble = true;
+        if (isRankGroup && cards.length === 4 && wilds.length === 0) {
+          isDouble = true;
+        }
+        if (isSequence && cards.length >= 6 && wilds.length === 0) {
+          isDouble = true;
+        }
 
         return {
           valid: true,
@@ -1497,7 +1520,6 @@
 
         this.socket.emit('sync_profile', this.user);
 
-        // Rendering dinamico classifica solo utenti reali
         this.socket.on('leaderboard_update', (list) => {
           this.renderLeaderboard(list);
         });
@@ -1638,7 +1660,7 @@
         list.slice(0, 10).forEach((p, idx) => {
           const league = this.getLeague(p.trophies);
           const city = this.getCityObj(p.city || 'modena');
-          const isMe = this.user && this.user.name && (p.name.toLowerCase() === this.user.name.toLowerCase());
+          const isMe = this.user && this.user.id && (p.id === this.user.id);
 
           const item = document.createElement('div');
           item.className = `lb-item ${isMe ? 'is-me' : ''}`;

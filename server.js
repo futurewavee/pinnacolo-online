@@ -8,11 +8,10 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
-// Code di matchmaking separate per formato e target
 const matchmakingQueues = {};
 const rooms = {};
 
-// Classifica reale dinamica (inizialmente vuota, popolata solo da utenti reali)
+// Classifica reale univoca tracciata per ID
 let globalLeaderboard = [];
 
 const SUITS = ['HEARTS', 'DIAMONDS', 'CLUBS', 'SPADES'];
@@ -45,19 +44,21 @@ function createFullDeck() {
 io.on('connection', (socket) => {
   socket.emit('leaderboard_update', globalLeaderboard);
 
-  // Sincronizzazione profilo reale
+  // Sincronizzazione profilo per ID univoco (non duplica più se cambi nome)
   socket.on('sync_profile', (userData) => {
-    if (!userData || !userData.name) return;
+    if (!userData || !userData.id || !userData.name) return;
     socket.userData = userData;
 
-    const existing = globalLeaderboard.find(u => u.name.trim().toLowerCase() === userData.name.trim().toLowerCase());
-    if (existing) {
-      existing.trophies = userData.trophies || 0;
-      existing.wins = userData.wins || 0;
-      existing.losses = userData.losses || 0;
-      existing.city = userData.city || 'modena';
+    const existingIdx = globalLeaderboard.findIndex(u => u.id === userData.id);
+    if (existingIdx !== -1) {
+      globalLeaderboard[existingIdx].name = userData.name.trim();
+      globalLeaderboard[existingIdx].city = userData.city || 'modena';
+      globalLeaderboard[existingIdx].trophies = userData.trophies || 0;
+      globalLeaderboard[existingIdx].wins = userData.wins || 0;
+      globalLeaderboard[existingIdx].losses = userData.losses || 0;
     } else {
       globalLeaderboard.push({
+        id: userData.id,
         name: userData.name.trim(),
         city: userData.city || 'modena',
         trophies: userData.trophies || 0,
@@ -71,9 +72,8 @@ io.on('connection', (socket) => {
     io.emit('leaderboard_update', globalLeaderboard);
   });
 
-  // Matchmaking
   socket.on('join_matchmaking', (params) => {
-    socket.userData = params.user || { name: "Giocatore", trophies: 0, city: "modena" };
+    socket.userData = params.user || { id: socket.id, name: "Giocatore", trophies: 0, city: "modena" };
     const queueKey = `${params.handSize || 19}_${params.targetScore || 'quick'}`;
 
     if (!matchmakingQueues[queueKey]) {
